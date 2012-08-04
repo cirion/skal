@@ -73,3 +73,32 @@ class StatOutcome(models.Model):
 		return str(self.stat)
 
 
+class Player(models.Model):
+	email = models.EmailField()
+	created = models.DateTimeField(auto_now_add=True)
+	def __unicode__(self):
+		return self.email
+
+class Character(models.Model):
+	player = models.ForeignKey(Player)
+	name = models.CharField(max_length=20)
+	created = models.DateTimeField(auto_now_add=True)
+	def __unicode__(self):
+		return self.name
+
+class CharacterStat(models.Model):
+	character = models.ForeignKey(Character)
+	stat = models.IntegerField(choices=STAT_CHOICES)
+	value = models.IntegerField()
+	def level(self):
+		if self.value < 110:
+			return self.value / 10;
+		else:
+			temp = self.value - 100
+			level = 10
+			while (temp > 0):
+				++level
+				temp -= level
+			return level;
+	def __unicode__(self):
+		return str(self.stat) + ":" + str(self.value) + ":" + str(self.level())

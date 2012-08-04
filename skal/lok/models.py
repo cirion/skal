@@ -33,7 +33,25 @@ class Choice(models.Model):
 	description = models.TextField(max_length=1000)
 	def __unicode__(self):
 		return self.title
+	
+class ScenarioStatPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	stat = models.IntegerField(choices=STAT_CHOICES)
+	mininum = models.IntegerField(default=0)
+	maximum = models.IntegerField(default=100)
+	visible = models.BooleanField(default=True)
+	def __unicode__(self):
+		return str(self.stat)
 
+class ChoiceStatPreReq(models.Model):
+	choice = models.ForeignKey(Choice)
+	stat = models.IntegerField(choices=STAT_CHOICES)
+	mininum = models.IntegerField(default=0)
+	maximum = models.IntegerField(default=100)
+	visible = models.BooleanField(default=True)
+	def __unicode__(self):
+		return str(self.stat)
+	
 class Result(models.Model):
 	choice = models.ForeignKey(Choice)
 	title = models.CharField(max_length=100)

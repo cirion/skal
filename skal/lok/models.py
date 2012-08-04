@@ -43,8 +43,21 @@ class Choice(models.Model):
 	scenario = models.ForeignKey(Scenario)
 	title = models.CharField(max_length=100)
 	description = models.TextField(max_length=1000)
+	visible = models.BooleanField()
 	def __unicode__(self):
 		return self.title
+	def valid_for(self, character):
+		pre_reqs = ChoiceStatPreReq.objects.filter(choice=self.pk)
+		if not pre_reqs:
+			return True
+		try:
+			for pre_req in pre_reqs:
+				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
+				if character_stat.value < pre_req.minimum or character_stat.value > pre_req.maximum:
+					return False
+		except CharacterStat.DoesNotExist:
+			return False
+		return True
 	
 class ScenarioStatPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
@@ -58,7 +71,7 @@ class ScenarioStatPreReq(models.Model):
 class ChoiceStatPreReq(models.Model):
 	choice = models.ForeignKey(Choice)
 	stat = models.IntegerField(choices=STAT_CHOICES)
-	mininum = models.IntegerField(default=0)
+	minimum = models.IntegerField(default=0)
 	maximum = models.IntegerField(default=100)
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):

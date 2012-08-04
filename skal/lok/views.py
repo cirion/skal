@@ -15,3 +15,13 @@ def story(request):
 		if (scenario.valid_for(current_character)):
 			out_scenarios.append(scenario)
 	return render_to_response('lok/story.html', {'scenarios': out_scenarios})
+
+def scenario(request, scenario_id):
+	scenario = Scenario.objects.get(pk=scenario_id)
+	current_character = Character.objects.get(name="Cirion")
+	choices = list(Choice.objects.filter(scenario=scenario_id))
+	for choice in choices:
+		if (not choice.valid_for(current_character) and not choice.visible):
+			choices.remove(choice)
+	return render_to_response('lok/scenario.html', {'scenario': scenario, 'choices': choices})
+	

@@ -1,0 +1,8 @@
+{% if scenarios %}
+	{% for scenario in scenarios %}
+	<h1><a href="/skal/scenario/{{scenario.id}}">{{scenario.title }}</a></h1>
+	<p>{{scenario.description }}</p>
+	{% endfor %}
+{% else %}
+	<p>Whoops! There should be some stories here for you. Sorry about that, please check back soon!</p>
+{% endif %}

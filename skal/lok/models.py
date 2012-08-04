@@ -26,6 +26,18 @@ class Scenario(models.Model):
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_ENCOUNTER)
 	def __unicode__(self):
 		return self.title
+	def valid_for(self, character):
+		pre_reqs = ScenarioStatPreReq.objects.filter(scenario=self.pk)
+		if not pre_reqs:
+			return True
+		try:
+			for pre_req in pre_reqs:
+				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
+				if character_stat.value < pre_req.minimum or character_stat.value > pre_req.maximum:
+					return False
+		except CharacterStat.DoesNotExist:
+			return False
+		return True
 
 class Choice(models.Model):
 	scenario = models.ForeignKey(Scenario)
@@ -37,7 +49,7 @@ class Choice(models.Model):
 class ScenarioStatPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
 	stat = models.IntegerField(choices=STAT_CHOICES)
-	mininum = models.IntegerField(default=0)
+	minimum = models.IntegerField(default=0)
 	maximum = models.IntegerField(default=100)
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
@@ -93,6 +105,8 @@ class CharacterStat(models.Model):
 	def level(self):
 		if self.value < 110:
 			return self.value / 10;
+		elif self.value > 5105:
+			return 100 + (self.value - 5105) / 100;
 		else:
 			temp = self.value - 100
 			level = 10

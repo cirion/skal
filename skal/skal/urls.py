@@ -10,7 +10,7 @@ urlpatterns = patterns('',
     # url(r'^skal/', include('skal.foo.urls')),
 	url(r'^lok/story/$', 'lok.views.story'),
 	url(r'^lok/scenario/(?P<scenario_id>\d+)/$', 'lok.views.scenario'),
-#	url(r'^lok/choice/(?P<choice_id>\d+)/$', 'lok.views.choice'),
+	url(r'^lok/choice/(?P<choice_id>\d+)/$', 'lok.views.choice'),
 
     # Uncomment the admin/doc line below to enable admin documentation:
     # url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

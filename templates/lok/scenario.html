@@ -4,7 +4,10 @@
 {% for choice in choices %}
 <h2>{{choice.title}}</h2>
 <p>{{choice.description}}
-<form action="/lok/choice/{{choice.id}}/"><input type="submit" value="Do this!"/> </form>
+<form method="post" action="/lok/choice/{{choice.id}}/">
+{% csrf_token %}
+	<input type="submit" value="Do this!"/> 
+</form>
 {% endfor %}
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>

@@ -27,8 +27,10 @@ def scenario(request, scenario_id):
 	
 
 def choice(request, choice_id):
+	current_character = Character.objects.get(name="Cirion")
 	choice = Choice.objects.get(pk=choice_id)
 	# TODO: Just 1 now, but will have multiples in the next phase, and will need to pick outcome (success, failure, rare success)
 	result = Result.objects.get(choice=choice.pk)
-	return render_to_response('lok/result.html', {'result': result})
+	changes = current_character.update_with_result(result)
+	return render_to_response('lok/result.html', {'result': result, 'changes': changes})
 

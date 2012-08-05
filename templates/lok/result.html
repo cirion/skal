@@ -1,7 +1,13 @@
 {% if result %}
 <h1>{{result.title}}</h1>
 <p>{{result.description}}</p>
-<!-- Should also show a summary of changes here. -->
+	{% if changes %}
+<ul>
+		{% for change in changes %}
+	<li>{{change.name}} has changed from {{change.old}} to {{change.new}}.</li>
+		{% endfor %}
+</ul>
+	{% endif %}
 <a href="/lok/story/"><p>Carry on, then.</p></a>
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>

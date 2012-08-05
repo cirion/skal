@@ -1,16 +1,25 @@
 from django.db import models
 
+STAT_PERSUASIVE = 0
 STAT_HUNTING = 1
 STAT_STEALTH = 2
 STAT_SWORDFIGHTING = 3
 STAT_SAILING = 4
 STAT_NAVIGATION = 5
 STAT_CHOICES = (
+		(STAT_PERSUASIVE, "Persuasive"),
 		(STAT_HUNTING, "Hunting"),
 		(STAT_STEALTH, "Stealth"),
 		(STAT_SWORDFIGHTING, "Swordfighting"),
 		(STAT_SAILING, "Sailing"),
 		(STAT_NAVIGATION, "Navigation")
+)
+
+GENDER_FEMALE = 1
+GENDER_MALE = 2
+GENDER_CHOICES = (
+	(GENDER_FEMALE, "Female"),
+	(GENDER_MALE, "Male"),
 )
 
 class Scenario(models.Model):
@@ -108,8 +117,31 @@ class Character(models.Model):
 	player = models.ForeignKey(Player)
 	name = models.CharField(max_length=20)
 	created = models.DateTimeField(auto_now_add=True)
+	money = models.IntegerField()
+	gender = models.IntegerField(choices=GENDER_CHOICES)
 	def __unicode__(self):
 		return self.name
+	def update_with_result(self, result):
+		changes = list()
+		stat_outcomes = StatOutcome.objects.filter(choice = result.pk)
+		for outcome in stat_outcomes:
+			stat = CharacterStat.objects.get(character=self.pk, stat=outcome.stat)
+			change = Change()
+			change.old = stat.value
+			change.name = STAT_CHOICES[stat.stat][1]
+			stat.value += outcome.amount
+			change.new = stat.value
+			changes.append(change)
+			stat.save()
+		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
+		for outcome in money_outcomes:
+			change = Change()
+			change.name = "Royals"
+			change.old = self.money
+			self.money += outcome.amount
+			change.new = self.money
+		self.save()
+		return changes
 
 class CharacterStat(models.Model):
 	character = models.ForeignKey(Character)
@@ -129,3 +161,10 @@ class CharacterStat(models.Model):
 			return level;
 	def __unicode__(self):
 		return str(self.stat) + ":" + str(self.value) + ":" + str(self.level())
+
+class Change(models.Model):
+	old = models.IntegerField()
+	new = models.IntegerField()
+	name = models.CharField(max_length=100)
+	def __unicode__(self):
+		return self.name + " has changed from " + self.old + " to " + self.new + "."

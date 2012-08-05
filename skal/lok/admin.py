@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem
 
 from django.contrib import admin
 
@@ -35,15 +35,29 @@ class ResultAdmin(admin.ModelAdmin):
 class CharacterStatInline(admin.TabularInline):
 	model = CharacterStat
 
+class CharacterPlotInline(admin.TabularInline):
+	model = CharacterPlot
+
+class CharacterItemInline(admin.TabularInline):
+	model = CharacterItem
+
 class CharacterAdmin(admin.ModelAdmin):
 	model = Character
-	inlines = [CharacterStatInline]
+	inlines = [CharacterStatInline, CharacterPlotInline, CharacterItemInline]
 
 class StatAdmin(admin.ModelAdmin):
 	model = Stat
+
+class ItemAdmin(admin.ModelAdmin):
+	model = Item
+
+class PlotAdmin(admin.ModelAdmin):
+	model = Plot
 
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
 admin.site.register(Character, CharacterAdmin)
 admin.site.register(Stat, StatAdmin)
+admin.site.register(Plot, PlotAdmin)
+admin.site.register(Item, ItemAdmin)

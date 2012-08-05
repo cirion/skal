@@ -24,6 +24,13 @@ def create_character(request):
 	return render_to_response('lok/create_character.html', {}, context_instance=RequestContext(request))
 
 @login_required
+def character(request):
+	current_character = Character.objects.get(player=request.user.id)
+	skills = CharacterStats.objects.filter(character = current_character, type = Stat.TYPE_SKILL)
+	fame = CharacterStats.objects.filter(character = current_character, type = Stat.TYPE_FAME)
+	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame})
+
+@login_required
 def story(request):
 	if not Character.objects.filter(player=request.user.id):
 		return HttpResponseRedirect('/lok/create/')

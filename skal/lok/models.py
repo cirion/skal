@@ -117,8 +117,13 @@ class Character(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	money = models.IntegerField()
 	gender = models.IntegerField(choices=GENDER_CHOICES)
+	current_health = models.IntegerField()
 	def __unicode__(self):
 		return self.name
+	def max_health(self):
+		# Need to figure out how to grow this...
+		best_stat = CharacterStat.objects.all().order_by('-value')[0]
+		return level_from_value(best_stat.value)
 	def update_with_result(self, result):
 		changes = list()
 		stat_outcomes = StatOutcome.objects.filter(choice = result.pk)
@@ -158,6 +163,31 @@ class CharacterStat(models.Model):
 		return level_from_value(self.value)
 	def __unicode__(self):
 		return str(self.stat) + ":" + str(self.value) + ":" + str(self.level())
+
+class Plot(models.Model):
+	name = models.CharField(max_length=100)
+	def __unicode__(self):
+		return self.name
+
+class CharacterPlot(models.Model):
+	character = models.ForeignKey(Character)
+	plot = models.ForeignKey(Plot)
+	value = models.IntegerField(default=0)
+	def __unicode__(self):
+		return self.character.name + ":" + self.plot.name + ":" + str(self.value)
+
+class Item(models.Model):
+	name = models.CharField(max_length=100)
+	value = models.IntegerField(default=1)
+	def __unicode__(self):
+		return self.name
+
+class CharacterItem(models.Model):
+	character = models.ForeignKey(Character)
+	item = models.ForeignKey(Item)
+	quantity = models.IntegerField(default = 0)
+	def __unicode__(self):
+		return str(self.quantity) + " " + self.item.name
 
 class Change(models.Model):
 	TYPE_INCREMENT = 1

@@ -15,15 +15,17 @@ def create_character(request):
 		if Character.objects.filter(name=name).exists():
 			return render_to_responds('lok/create_character.html', {'error': "Sorry, that name is already taken."})
 		character = Character()
-		character.player = request.user.id
+		character.player = request.user
 		character.money = 0
 		character.gender = request.POST['gender']
 		character.save()
 		return HttpResponseRedirect('/lok/story/')
-	return render_to_response('lok/create_character.html')
+	return render_to_response('lok/create_character.html', {}, context_instance=RequestContext(request))
 
 @login_required
 def story(request):
+	if not Character.objects.filter(player=request.user.id):
+		return HttpResponseRedirect('/lok/create/')
 	current_character = Character.objects.get(player=request.user.id)
 	scenarios = list(Scenario.objects.all())
 	random.shuffle(scenarios)

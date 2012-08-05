@@ -1,0 +1,22 @@
+<html>
+<body>
+<h1>
+{{title}} {{character.name}}
+</h1>
+<ul>
+<li>You own {{character.money}} royals.</li>
+{% if fame%}
+<li>Your fame has reached level {{fame}}</li>
+{%endif%}
+{%for skill in skills %}
+<li>{{skill.stat.name}} is level {{skill.value}}</li>
+{%endfor%}
+{%for esteem in esteem %}
+<li>{{esteem.stat.name}} regard you at level {{esteem.value}}</li>
+{%endfor%}
+{%for item in items %}
+<li>{{item.quantity}} {{item.item.name}}</li>
+{% endfor %}
+</ul>
+</body>
+</html>

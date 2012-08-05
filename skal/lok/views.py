@@ -5,8 +5,10 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat
 import random
+from lok.models import GENDER_MALE as GENDER_MALE
+from lok.utils import level_from_value as level_from_value
 
 @login_required
 def create_character(request):
@@ -26,9 +28,19 @@ def create_character(request):
 @login_required
 def character(request):
 	current_character = Character.objects.get(player=request.user.id)
-	skills = CharacterStats.objects.filter(character = current_character, type = Stat.TYPE_SKILL)
-	fame = CharacterStats.objects.filter(character = current_character, type = Stat.TYPE_FAME)
-	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame})
+	skills = list(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_SKILL))
+	for skill in skills:
+		skill.value = level_from_value(skill.value)
+	items = CharacterItem.objects.all()
+	fame = level_from_value(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME)[0].value)
+	esteems = CharacterStat.objects.filter(character = current_character, stat__type = Stat.TYPE_ESTEEM)
+	for esteem in esteems:
+		esteem.value = level_from_value(esteem.value)
+	if current_character.gender == GENDER_MALE:
+		title = "Mr."
+	else:
+		title = "Ms."
+	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'title': title})
 
 @login_required
 def story(request):

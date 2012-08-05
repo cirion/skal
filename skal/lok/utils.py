@@ -2,7 +2,7 @@ def level_from_value(value):
 	if value < 110:
 		return value / 10
 	elif value > 5105:
-		return 100 + (self.value - 5105) / 100
+		return 100 + (value - 5105) / 100
 	else:
 		temp = value - 100
 		level = 10

@@ -9,6 +9,7 @@ admin.autodiscover()
 #urlpatterns = patterns('lok.views',
 urlpatterns = patterns('',
 	url(r'^admin/', include(admin.site.urls)),
-	url(r'^login/$', 'django.contrib.auth.views.login'),
+	url(r'^accounts/', include('registration.backends.default.urls')),
+	#url(r'^login/$', 'django.contrib.auth.views.login'),
 	url(r'^lok/', include('lok.urls')),
 )

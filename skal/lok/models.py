@@ -1,21 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-STAT_PERSUASIVE = 0
-STAT_HUNTING = 1
-STAT_STEALTH = 2
-STAT_SWORDFIGHTING = 3
-STAT_SAILING = 4
-STAT_NAVIGATION = 5
-STAT_CHOICES = (
-		(STAT_PERSUASIVE, "Persuasive"),
-		(STAT_HUNTING, "Hunting"),
-		(STAT_STEALTH, "Stealth"),
-		(STAT_SWORDFIGHTING, "Swordfighting"),
-		(STAT_SAILING, "Sailing"),
-		(STAT_NAVIGATION, "Navigation")
-)
-
 GENDER_FEMALE = 1
 GENDER_MALE = 2
 GENDER_CHOICES = (
@@ -68,10 +53,25 @@ class Choice(models.Model):
 		except CharacterStat.DoesNotExist:
 			return False
 		return True
+
+class Stat(models.Model):
+	TYPE_SKILL = 1
+	TYPE_FAME = 2
+	TYPE_ESTEEM = 3
+	TYPE_CHOICES = (
+		(TYPE_SKILL, "Skill"),
+		(TYPE_FAME, "Fame"),
+		(TYPE_ESTEEM, "Esteem"),
+	)
+	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_SKILL)
+	name = models.CharField(max_length=50)
+	def __unicode__(self):
+		return self.name
+	
 	
 class ScenarioStatPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
-	stat = models.IntegerField(choices=STAT_CHOICES)
+	stat = models.ForeignKey(Stat)
 	minimum = models.IntegerField(default=0)
 	maximum = models.IntegerField(default=100)
 	visible = models.BooleanField(default=True)
@@ -80,7 +80,7 @@ class ScenarioStatPreReq(models.Model):
 
 class ChoiceStatPreReq(models.Model):
 	choice = models.ForeignKey(Choice)
-	stat = models.IntegerField(choices=STAT_CHOICES)
+	stat = models.ForeignKey(Stat)
 	minimum = models.IntegerField(default=0)
 	maximum = models.IntegerField(default=100)
 	visible = models.BooleanField(default=True)
@@ -102,8 +102,9 @@ class MoneyOutcome(models.Model):
 	
 class StatOutcome(models.Model):
 	choice = models.ForeignKey(Result)
-	stat = models.IntegerField(choices=STAT_CHOICES, default=STAT_SWORDFIGHTING)
+	stat = models.ForeignKey(Stat)
 	amount = models.IntegerField()
+	maximum = models.IntegerField()
 	def __unicode__(self):
 		return str(self.stat)
 
@@ -140,7 +141,7 @@ class Character(models.Model):
 
 class CharacterStat(models.Model):
 	character = models.ForeignKey(Character)
-	stat = models.IntegerField(choices=STAT_CHOICES)
+	stat = models.ForeignKey(Stat)
 	value = models.IntegerField()
 	def level(self):
 		if self.value < 110:

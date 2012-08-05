@@ -15,6 +15,7 @@ def create_character(request):
 		if Character.objects.filter(name=name).exists():
 			return render_to_responds('lok/create_character.html', {'error': "Sorry, that name is already taken."})
 		character = Character()
+		character.name = name
 		character.player = request.user
 		character.money = 0
 		character.gender = request.POST['gender']

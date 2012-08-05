@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Player, Character, CharacterStat
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat
 
 from django.contrib import admin
 
@@ -39,11 +39,7 @@ class CharacterAdmin(admin.ModelAdmin):
 	model = Character
 	inlines = [CharacterStatInline]
 
-class PlayerAdmin(admin.ModelAdmin):
-	model = Player
-
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
 admin.site.register(Character, CharacterAdmin)
-admin.site.register(Player, PlayerAdmin)

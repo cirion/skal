@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 STAT_PERSUASIVE = 0
 STAT_HUNTING = 1
@@ -107,14 +108,8 @@ class StatOutcome(models.Model):
 		return str(self.stat)
 
 
-class Player(models.Model):
-	email = models.EmailField()
-	created = models.DateTimeField(auto_now_add=True)
-	def __unicode__(self):
-		return self.email
-
 class Character(models.Model):
-	player = models.ForeignKey(Player)
+	player = models.ForeignKey(User)
 	name = models.CharField(max_length=20)
 	created = models.DateTimeField(auto_now_add=True)
 	money = models.IntegerField()

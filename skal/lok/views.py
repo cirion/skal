@@ -5,14 +5,26 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, Player, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result
 import random
 
 @login_required
+def create_character(request):
+	if (request.POST):
+		name = request.POST['name']
+		if Character.objects.filter(name=name).exists():
+			return render_to_responds('lok/create_character.html', {'error': "Sorry, that name is already taken."})
+		character = Character()
+		character.player = request.user.id
+		character.money = 0
+		character.gender = request.POST['gender']
+		character.save()
+		return HttpResponseRedirect('/lok/story/')
+	return render_to_response('lok/create_character.html')
+
+@login_required
 def story(request):
-	if not request.user.is_authenticated():
-		return render_to_response('lok/login.html')
-	current_character = Character.objects.get(name="Cirion")
+	current_character = Character.objects.get(player=request.user.id)
 	scenarios = list(Scenario.objects.all())
 	random.shuffle(scenarios)
 	max_scenarios = 2
@@ -39,7 +51,7 @@ def check_auth(request):
 @login_required
 def scenario(request, scenario_id):
 	scenario = Scenario.objects.get(pk=scenario_id)
-	current_character = Character.objects.get(name="Cirion")
+	current_character = Character.objects.get(player=request.user.id)
 	choices = list(Choice.objects.filter(scenario=scenario_id))
 	for choice in choices:
 		if (not choice.valid_for(current_character) and not choice.visible):
@@ -56,7 +68,7 @@ def result(request, result_id):
 
 @login_required
 def choice(request, choice_id):
-	current_character = Character.objects.get(name="Cirion")
+	current_character = Character.objects.get(player=request.user.id)
 	choice = Choice.objects.get(pk=choice_id)
 	# TODO: Just 1 now, but will have multiples in the next phase, and will need to pick outcome (success, failure, rare success)
 	result = Result.objects.get(choice=choice.pk)

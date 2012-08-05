@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from lok.utils import level_from_value as level_from_value
+from lok.utils import value_from_level as value_from_level
 
 GENDER_FEMALE = 1
 GENDER_MALE = 2
@@ -28,7 +30,7 @@ class Scenario(models.Model):
 		try:
 			for pre_req in pre_reqs:
 				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
-				if character_stat.value < pre_req.minimum or character_stat.value > pre_req.maximum:
+				if level_from_value(character_stat.value) < pre_req.minimum or level_from_value(character_stat.value) > pre_req.maximum:
 					return False
 		except CharacterStat.DoesNotExist:
 			return False
@@ -48,7 +50,7 @@ class Choice(models.Model):
 		try:
 			for pre_req in pre_reqs:
 				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
-				if character_stat.value < pre_req.minimum or character_stat.value > pre_req.maximum:
+				if level_from_value(character_stat.value) < pre_req.minimum or level_from_value(character_stat.value) > pre_req.maximum:
 					return False
 		except CharacterStat.DoesNotExist:
 			return False
@@ -104,7 +106,7 @@ class StatOutcome(models.Model):
 	choice = models.ForeignKey(Result)
 	stat = models.ForeignKey(Stat)
 	amount = models.IntegerField()
-	maximum = models.IntegerField()
+	maximum = models.IntegerField(default=100000)
 	def __unicode__(self):
 		return str(self.stat)
 
@@ -121,14 +123,23 @@ class Character(models.Model):
 		changes = list()
 		stat_outcomes = StatOutcome.objects.filter(choice = result.pk)
 		for outcome in stat_outcomes:
-			stat = CharacterStat.objects.get(character=self.pk, stat=outcome.stat)
-			change = Change()
-			change.old = stat.value
-			change.name = STAT_CHOICES[stat.stat][1]
-			stat.value += outcome.amount
-			change.new = stat.value
-			changes.append(change)
-			stat.save()
+			stat, created = CharacterStat.objects.get_or_create(character=self, stat=outcome.stat)
+			if (level_from_value(stat.value) < outcome.maximum):
+				change = Change()
+				change.old = stat.value
+				oldlevel = level_from_value(stat.value)
+				change.name = stat.stat.name
+				stat.value += outcome.amount
+				change.amount = outcome.amount
+				change.new = stat.value
+				newlevel = level_from_value(stat.value)
+				if oldlevel != newlevel:
+					change.type = Change.TYPE_LEVEL
+					change.old = oldlevel
+					change.new = newlevel
+					change.amount = 1
+				changes.append(change)
+				stat.save()
 		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
 		for outcome in money_outcomes:
 			change = Change()
@@ -142,25 +153,23 @@ class Character(models.Model):
 class CharacterStat(models.Model):
 	character = models.ForeignKey(Character)
 	stat = models.ForeignKey(Stat)
-	value = models.IntegerField()
+	value = models.IntegerField(default=0)
 	def level(self):
-		if self.value < 110:
-			return self.value / 10;
-		elif self.value > 5105:
-			return 100 + (self.value - 5105) / 100;
-		else:
-			temp = self.value - 100
-			level = 10
-			while (temp > 0):
-				++level
-				temp -= level
-			return level;
+		return level_from_value(self.value)
 	def __unicode__(self):
 		return str(self.stat) + ":" + str(self.value) + ":" + str(self.level())
 
 class Change(models.Model):
+	TYPE_INCREMENT = 1
+	TYPE_LEVEL = 2
+	TYPE_CHOICES = (
+		(TYPE_INCREMENT, "Increment"),
+		(TYPE_LEVEL, "Level"),
+	)
+	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()
 	new = models.IntegerField()
+	amount = models.IntegerField()
 	name = models.CharField(max_length=100)
 	def __unicode__(self):
 		return self.name + " has changed from " + self.old + " to " + self.new + "."

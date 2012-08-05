@@ -4,7 +4,11 @@
 	{% if changes %}
 <ul>
 		{% for change in changes %}
-	<li>{{change.name}} has changed from {{change.old}} to {{change.new}}.</li>
+			{% if change.type == 2 %}
+	<li>{{change.name}} has increased to level {{change.new}}!</li>
+			{% else %}
+	<li>{{change.name}} has increased by {{change.amount}} points.</li>
+			{% endif %}
 		{% endfor %}
 </ul>
 	{% endif %}

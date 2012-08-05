@@ -10,6 +10,17 @@ GENDER_CHOICES = (
 	(GENDER_MALE, "Male"),
 )
 
+def valid_for_stat_pre_reqs(character, pre_reqs):
+	if pre_reqs:
+		try:
+			for pre_req in pre_reqs:
+				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
+				if level_from_value(character_stat.value) < pre_req.minimum or level_from_value(character_stat.value) > pre_req.maximum:
+					return False
+		except CharacterStat.DoesNotExist:
+			return False
+	return True
+
 class Scenario(models.Model):
 	title = models.CharField(max_length=100)
 	image = models.ImageField(blank=True,null=True,upload_to="/home/chris/django/skal/pics")
@@ -25,14 +36,7 @@ class Scenario(models.Model):
 		return self.title
 	def valid_for(self, character):
 		pre_reqs = ScenarioStatPreReq.objects.filter(scenario=self.pk)
-		if not pre_reqs:
-			return True
-		try:
-			for pre_req in pre_reqs:
-				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
-				if level_from_value(character_stat.value) < pre_req.minimum or level_from_value(character_stat.value) > pre_req.maximum:
-					return False
-		except CharacterStat.DoesNotExist:
+		if not valid_for_stat_pre_reqs(character,pre_reqs):
 			return False
 		return True
 
@@ -45,16 +49,20 @@ class Choice(models.Model):
 		return self.title
 	def valid_for(self, character):
 		pre_reqs = ChoiceStatPreReq.objects.filter(choice=self.pk)
-		if not pre_reqs:
-			return True
-		try:
-			for pre_req in pre_reqs:
-				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
-				if level_from_value(character_stat.value) < pre_req.minimum or level_from_value(character_stat.value) > pre_req.maximum:
-					return False
-		except CharacterStat.DoesNotExist:
+		if not valid_for_stat_pre_reqs(character,pre_reqs):
 			return False
 		return True
+
+class Plot(models.Model):
+	name = models.CharField(max_length=100)
+	def __unicode__(self):
+		return self.name
+
+class Item(models.Model):
+	name = models.CharField(max_length=100)
+	value = models.IntegerField(default=1)
+	def __unicode__(self):
+		return self.name
 
 class Stat(models.Model):
 	TYPE_SKILL = 1
@@ -80,6 +88,14 @@ class ScenarioStatPreReq(models.Model):
 	def __unicode__(self):
 		return str(self.stat)
 
+class ScenarioItemPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	item = models.ForeignKey(Item)
+	minimum = models.IntegerField(default=1)
+	visible = models.BooleanField(default=True)
+	def __unicode__(self):
+		return str(minimum) + " " + self.item.name
+
 class ChoiceStatPreReq(models.Model):
 	choice = models.ForeignKey(Choice)
 	stat = models.ForeignKey(Stat)
@@ -88,6 +104,13 @@ class ChoiceStatPreReq(models.Model):
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
 		return str(self.stat)
+
+class ChoiceItemPreReq(models.Model):
+	choice = models.ForeignKey(Choice)
+	item = models.ForeignKey(Item)
+	minimum = models.IntegerField(default=1)
+	def __unicode__(self):
+		return str(minimum) + " " + self.item.name
 	
 class Result(models.Model):
 	choice = models.ForeignKey(Choice)
@@ -110,6 +133,19 @@ class StatOutcome(models.Model):
 	def __unicode__(self):
 		return str(self.stat)
 
+class ItemOutcome(models.Model):
+	result = models.ForeignKey(Result)
+	item = models.ForeignKey(Item)
+	amount = models.IntegerField(default=1)
+	def __unicode__(self):
+		return str(amount) + " " + item.name
+
+class PlotOutcome(models.Model):
+	result = models.ForeignKey(Result)
+	plot = models.ForeignKey(Plot)
+	value = models.IntegerField()
+	def __unicode__(self):
+		return str(value) + " " + plot.name
 
 class Character(models.Model):
 	player = models.ForeignKey(User)
@@ -164,23 +200,12 @@ class CharacterStat(models.Model):
 	def __unicode__(self):
 		return str(self.stat) + ":" + str(self.value) + ":" + str(self.level())
 
-class Plot(models.Model):
-	name = models.CharField(max_length=100)
-	def __unicode__(self):
-		return self.name
-
 class CharacterPlot(models.Model):
 	character = models.ForeignKey(Character)
 	plot = models.ForeignKey(Plot)
 	value = models.IntegerField(default=0)
 	def __unicode__(self):
 		return self.character.name + ":" + self.plot.name + ":" + str(self.value)
-
-class Item(models.Model):
-	name = models.CharField(max_length=100)
-	value = models.IntegerField(default=1)
-	def __unicode__(self):
-		return self.name
 
 class CharacterItem(models.Model):
 	character = models.ForeignKey(Character)

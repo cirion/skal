@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq
 
 from django.contrib import admin
 
@@ -7,6 +7,12 @@ class MoneyOutcomeInline(admin.TabularInline):
 
 class StatOutcomeInline(admin.TabularInline):
 	model = StatOutcome
+
+class PlotOutcomeInline(admin.TabularInline):
+	model = PlotOutcome
+
+class ItemOutcomeInline(admin.TabularInline):
+	model = ItemOutcome
 
 class ResultInline(admin.StackedInline):
 	model = Result
@@ -17,20 +23,32 @@ class ChoiceStatPreReqInline(admin.TabularInline):
 class ScenarioStatPreReqInline(admin.TabularInline):
 	model = ScenarioStatPreReq
 
+class ChoiceItemPreReqInline(admin.TabularInline):
+	model = ChoiceItemPreReq
+
+class ScenarioItemPreReqInline(admin.TabularInline):
+	model = ScenarioItemPreReq
+
+class ScenarioPlotPreReqInline(admin.TabularInline):
+	model = ScenarioPlotPreReq
+
 class ChoiceInline(admin.StackedInline):
 	model = Choice
 
 class ScenarioAdmin(admin.ModelAdmin):
-	inlines = [ScenarioStatPreReqInline,ChoiceInline]
+	inlines = [ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ChoiceInline]
 	search_fields = ['title', 'description']
 
 class ChoiceAdmin(admin.ModelAdmin):
 	model = Choice
 	inlines = [ChoiceStatPreReqInline,ResultInline]
+	search_fields = ['title', 'description']
 
 class ResultAdmin(admin.ModelAdmin):
 	model = Result
-	inlines = [MoneyOutcomeInline, StatOutcomeInline]
+	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline]
+	search_fields = ['title', 'description']
+
 
 class CharacterStatInline(admin.TabularInline):
 	model = CharacterStat

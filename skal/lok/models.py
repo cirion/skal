@@ -21,6 +21,28 @@ def valid_for_stat_pre_reqs(character, pre_reqs):
 			return False
 	return True
 
+def valid_for_item_pre_reqs(character, pre_reqs):
+	if pre_reqs:
+		try:
+			for pre_req in pre_reqs:
+				character_item = CharacterItem.objects.get(character=character.pk, item=pre_req.item)
+				if character_item.quantity < pre_req.minimum:
+					return False
+		except CharacterItem.DoesNotExist:
+			return False;
+	return True;
+
+def valid_for_plot_pre_req(character, pre_reqs):
+	if pre_reqs:
+		try:
+			for pre_req in pre_req:
+				character_plot = CharacterPlot.objects.get(character=character.pk, plot=pre_req.plot)
+				if character_plot.value != pre_req.value:
+					return False
+		except CharacterPlot.DoesNotExist:
+			return False;
+	return True;
+
 class Scenario(models.Model):
 	title = models.CharField(max_length=100)
 	image = models.ImageField(blank=True,null=True,upload_to="/home/chris/django/skal/pics")
@@ -38,6 +60,9 @@ class Scenario(models.Model):
 		pre_reqs = ScenarioStatPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_stat_pre_reqs(character,pre_reqs):
 			return False
+		pre_reqs = ScenarioItemPreReq.objects.filter(scenario=self.pk)
+		if not valid_for_item_pre_reqs(character,pre_reqs):
+			return False
 		return True
 
 class Choice(models.Model):
@@ -50,6 +75,9 @@ class Choice(models.Model):
 	def valid_for(self, character):
 		pre_reqs = ChoiceStatPreReq.objects.filter(choice=self.pk)
 		if not valid_for_stat_pre_reqs(character,pre_reqs):
+			return False
+		pre_reqs = ChoiceItemPreReq.objects.filter(choice=self.pk)
+		if not valid_for_item_pre_reqs(character,pre_reqs):
 			return False
 		return True
 
@@ -94,7 +122,14 @@ class ScenarioItemPreReq(models.Model):
 	minimum = models.IntegerField(default=1)
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
-		return str(minimum) + " " + self.item.name
+		return str(self.minimum) + " " + self.item.name
+
+class ScenarioPlotPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	plot = models.ForeignKey(Plot)
+	value = models.IntegerField()
+	def __unicode__(self):
+		return self.plot.name + " " + str(self.value)
 
 class ChoiceStatPreReq(models.Model):
 	choice = models.ForeignKey(Choice)
@@ -110,8 +145,8 @@ class ChoiceItemPreReq(models.Model):
 	item = models.ForeignKey(Item)
 	minimum = models.IntegerField(default=1)
 	def __unicode__(self):
-		return str(minimum) + " " + self.item.name
-	
+		return str(self.minimum) + " " + self.item.name
+
 class Result(models.Model):
 	choice = models.ForeignKey(Choice)
 	title = models.CharField(max_length=100)
@@ -138,14 +173,14 @@ class ItemOutcome(models.Model):
 	item = models.ForeignKey(Item)
 	amount = models.IntegerField(default=1)
 	def __unicode__(self):
-		return str(amount) + " " + item.name
+		return str(self.amount) + " " + self.item.name
 
 class PlotOutcome(models.Model):
 	result = models.ForeignKey(Result)
 	plot = models.ForeignKey(Plot)
 	value = models.IntegerField()
 	def __unicode__(self):
-		return str(value) + " " + plot.name
+		return str(self.value) + " " + self.plot.name
 
 class Character(models.Model):
 	player = models.ForeignKey(User)
@@ -166,7 +201,7 @@ class Character(models.Model):
 		for outcome in stat_outcomes:
 			stat, created = CharacterStat.objects.get_or_create(character=self, stat=outcome.stat)
 			if (level_from_value(stat.value) < outcome.maximum):
-				change = Change()
+				change = Change(type=Change.TYPE_INCREMENT)
 				change.old = stat.value
 				oldlevel = level_from_value(stat.value)
 				change.name = stat.stat.name
@@ -178,16 +213,38 @@ class Character(models.Model):
 					change.type = Change.TYPE_LEVEL
 					change.old = oldlevel
 					change.new = newlevel
-					change.amount = 1
+					change.amount = newlevel - oldlevel
 				changes.append(change)
 				stat.save()
 		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
 		for outcome in money_outcomes:
-			change = Change()
+			change = Change(type = Change.TYPE_MONEY)
 			change.name = "Royals"
 			change.old = self.money
 			self.money += outcome.amount
 			change.new = self.money
+			change.amount = outcome.amount
+			changes.append(change)
+		item_outcomes = ItemOutcome.objects.filter(result = result.pk)
+		for outcome in item_outcomes:
+			change = Change(type = Change.TYPE_ITEM)
+			change.name = outcome.item.name
+			item, created = CharacterItem.objects.get_or_create(character=self, item=outcome.item)
+			change.old = item.quantity
+			change.amount = outcome.amount
+			item.quantity += outcome.amount
+			change.new = item.quantity
+			item.save()
+			changes.append(change)
+		plot_outcomes = PlotOutcome.objects.filter(result = result.pk)
+		for outcome in plot_outcomes:
+			change = Change(type = Change.TYPE_PLOT)
+			change.name = outcome.plot.name
+			plot, created = CharacterPlot.objects.get_or_create(character = self, plot = outcome.plot)
+			change.new = outcome.value
+			plot.value = outcome.value
+			plot.save()
+			changes.append(change)
 		self.save()
 		return changes
 
@@ -217,9 +274,15 @@ class CharacterItem(models.Model):
 class Change(models.Model):
 	TYPE_INCREMENT = 1
 	TYPE_LEVEL = 2
+	TYPE_MONEY = 3
+	TYPE_PLOT = 4
+	TYPE_ITEM = 5
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
+		(TYPE_MONEY, "Money"),
+		(TYPE_PLOT, "Plot"),
+		(TYPE_ITEM, "Item"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()

@@ -6,7 +6,13 @@
 		{% for change in changes %}
 			{% if change.type == 2 %}
 	<li>{{change.name}} has increased to level {{change.new}}!</li>
-			{% else %}
+			{% elif change.type == 3 %}
+	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
+			{% elif change.type == 5 and change.old == 0 %}
+	<li>You now have {{change.new}} {{change.name}}.</li>
+			{% elif change.type == 5 %}
+	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
+			{% elif change.type == 1 %}
 	<li>{{change.name}} has increased by {{change.amount}} points.</li>
 			{% endif %}
 		{% endfor %}

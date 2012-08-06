@@ -1,18 +1,28 @@
 from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq
 
+from admin_enhancer import admin as enhanced_admin
+
 from django.contrib import admin
+
+class EnhancedModelAdmin(enhanced_admin.EnhancedModelAdminMixin, admin.ModelAdmin):
+	pass
 
 class MoneyOutcomeInline(admin.TabularInline):
 	model = MoneyOutcome
+	extra = 1
+	max_num = 1
 
 class StatOutcomeInline(admin.TabularInline):
 	model = StatOutcome
+	extra = 1
 
 class PlotOutcomeInline(admin.TabularInline):
 	model = PlotOutcome
+	extra = 1
 
 class ItemOutcomeInline(admin.TabularInline):
 	model = ItemOutcome
+	extra = 1
 
 class ResultInline(admin.StackedInline):
 	model = Result
@@ -20,23 +30,24 @@ class ResultInline(admin.StackedInline):
 class ChoiceStatPreReqInline(admin.TabularInline):
 	model = ChoiceStatPreReq
 
-class ScenarioStatPreReqInline(admin.TabularInline):
+class ScenarioStatPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioStatPreReq
 
 class ChoiceItemPreReqInline(admin.TabularInline):
 	model = ChoiceItemPreReq
 
-class ScenarioItemPreReqInline(admin.TabularInline):
+class ScenarioItemPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioItemPreReq
 
 class ScenarioPlotPreReqInline(admin.TabularInline):
 	model = ScenarioPlotPreReq
 
-class ChoiceInline(admin.StackedInline):
+#class ChoiceInline(enhanced_admin.EnhancedAdminMixin,admin.StackedInline):
+class ChoiceInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = Choice
 
-class ScenarioAdmin(admin.ModelAdmin):
-	inlines = [ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ChoiceInline]
+class ScenarioAdmin(EnhancedModelAdmin):
+	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline]
 	search_fields = ['title', 'description']
 
 class ChoiceAdmin(admin.ModelAdmin):

@@ -186,9 +186,10 @@ class Character(models.Model):
 	player = models.ForeignKey(User)
 	name = models.CharField(max_length=20)
 	created = models.DateTimeField(auto_now_add=True)
-	money = models.IntegerField()
+	money = models.IntegerField(default=0)
 	gender = models.IntegerField(choices=GENDER_CHOICES)
 	current_health = models.IntegerField()
+	total_choices = models.IntegerField(default=0)
 	def __unicode__(self):
 		return self.name
 	def max_health(self):
@@ -245,6 +246,7 @@ class Character(models.Model):
 			plot.value = outcome.value
 			plot.save()
 			changes.append(change)
+		self.total_choices = self.total_choices + 1
 		self.save()
 		return changes
 

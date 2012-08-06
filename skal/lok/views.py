@@ -7,6 +7,7 @@ from django.shortcuts import render_to_response
 from django.template import Context, loader
 from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat
 import random
+from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
 from lok.utils import level_from_value as level_from_value
 
@@ -48,7 +49,9 @@ def story(request):
 		return HttpResponseRedirect('/lok/create/')
 	current_character = Character.objects.get(player=request.user.id)
 	scenarios = list(Scenario.objects.all())
-	random.shuffle(scenarios)
+	pseudo = Random()
+	pseudo.seed(current_character.total_choices)
+	pseudo.shuffle(scenarios)
 	max_scenarios = 2
 	out_scenarios = list()
 	while (len(out_scenarios) < max_scenarios and scenarios):

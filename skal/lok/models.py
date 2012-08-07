@@ -96,10 +96,12 @@ class Stat(models.Model):
 	TYPE_SKILL = 1
 	TYPE_FAME = 2
 	TYPE_ESTEEM = 3
+	TYPE_CHARACTERISTIC = 4
 	TYPE_CHOICES = (
 		(TYPE_SKILL, "Skill"),
 		(TYPE_FAME, "Fame"),
 		(TYPE_ESTEEM, "Esteem"),
+		(TYPE_CHARACTERISTIC, "Characteristic"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_SKILL)
 	name = models.CharField(max_length=50)
@@ -147,6 +149,12 @@ class ChoiceItemPreReq(models.Model):
 	def __unicode__(self):
 		return str(self.minimum) + " " + self.item.name
 
+class ChoiceMoneyPreReq(models.Model):
+	choice = models.ForeignKey(Choice)
+	amount = models.IntegerField()
+	def __unicode__(self):
+		return str(self.amount)
+
 class Result(models.Model):
 	choice = models.ForeignKey(Choice)
 	title = models.CharField(max_length=100)
@@ -158,7 +166,7 @@ class MoneyOutcome(models.Model):
 	choice = models.ForeignKey(Result)
 	amount = models.IntegerField()
 	def __unicode__(self):
-		return self.amount
+		return str(self.amount)
 	
 class StatOutcome(models.Model):
 	choice = models.ForeignKey(Result)
@@ -181,6 +189,12 @@ class PlotOutcome(models.Model):
 	value = models.IntegerField()
 	def __unicode__(self):
 		return str(self.value) + " " + self.plot.name
+
+class HealthOutcome(models.Model):
+	result = models.ForeignKey(Result)
+	amount = models.IntegerField()
+	def __unicode__(self):
+		return str(self.amount) + " health"
 
 class Character(models.Model):
 	player = models.ForeignKey(User)
@@ -217,15 +231,20 @@ class Character(models.Model):
 					change.amount = newlevel - oldlevel
 				changes.append(change)
 				stat.save()
+
 		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
 		for outcome in money_outcomes:
 			change = Change(type = Change.TYPE_MONEY)
 			change.name = "Royals"
 			change.old = self.money
 			self.money += outcome.amount
+			# If we hit this test, we probably accidentally made the result amount bigger than the choice amount.
+			if (self.money < 0):
+				self.money = 0
 			change.new = self.money
-			change.amount = outcome.amount
+			change.amount = change.new - change.old
 			changes.append(change)
+
 		item_outcomes = ItemOutcome.objects.filter(result = result.pk)
 		for outcome in item_outcomes:
 			change = Change(type = Change.TYPE_ITEM)
@@ -237,6 +256,22 @@ class Character(models.Model):
 			change.new = item.quantity
 			item.save()
 			changes.append(change)
+
+		health_outcomes = HealthOutcome.objects.filter(result = result.pk)
+		for outcome in health_outcomes:
+			change = Change(type = Change.TYPE_HEALTH)
+			change.name = "health"
+			change.old = self.current_health
+			self.current_health += outcome.amount
+			if (self.current_health < 0):
+				self.current_health = 0
+			if (self.current_health > self.max_health()):
+				self.current_health = self.max_health()
+			else:
+				change.new = self.current_health
+				change.amount = change.new - change.old
+				changes.append(change)
+
 		plot_outcomes = PlotOutcome.objects.filter(result = result.pk)
 		for outcome in plot_outcomes:
 			change = Change(type = Change.TYPE_PLOT)
@@ -246,6 +281,7 @@ class Character(models.Model):
 			plot.value = outcome.value
 			plot.save()
 			changes.append(change)
+
 		self.total_choices = self.total_choices + 1
 		self.save()
 		return changes
@@ -279,12 +315,14 @@ class Change(models.Model):
 	TYPE_MONEY = 3
 	TYPE_PLOT = 4
 	TYPE_ITEM = 5
+	TYPE_HEALTH = 6
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
 		(TYPE_MONEY, "Money"),
 		(TYPE_PLOT, "Plot"),
 		(TYPE_ITEM, "Item"),
+		(TYPE_HEALTH, "Health"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()

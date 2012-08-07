@@ -1,6 +1,6 @@
 {% if result %}
 <h1>{{result.title}}</h1>
-<p>{{result.description}}</p>
+<p>{{result.description|linebreaksbr}}</p>
 	{% if changes %}
 <ul>
 		{% for change in changes %}
@@ -14,6 +14,10 @@
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 1 %}
 	<li>{{change.name}} has increased by {{change.amount}} points.</li>
+			{% elif change.type == 6 and change.amount < 0 %}
+	<li>Your health has dropped from {{change.old}} to {{change.new}}.</li>
+			{% elif change.type == 6 %}
+	<li>Your health has increased from {{change.old}} to {{change.new}}.</li>
 			{% endif %}
 		{% endfor %}
 </ul>

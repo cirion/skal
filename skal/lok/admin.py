@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome
 
 from admin_enhancer import admin as enhanced_admin
 
@@ -9,6 +9,11 @@ class EnhancedModelAdmin(enhanced_admin.EnhancedModelAdminMixin, admin.ModelAdmi
 
 class MoneyOutcomeInline(admin.TabularInline):
 	model = MoneyOutcome
+	extra = 1
+	max_num = 1
+
+class HealthOutcomeInline(admin.TabularInline):
+	model = HealthOutcome
 	extra = 1
 	max_num = 1
 
@@ -30,11 +35,18 @@ class ResultInline(admin.StackedInline):
 class ChoiceStatPreReqInline(admin.TabularInline):
 	model = ChoiceStatPreReq
 
+class ChoiceMoneyPreReqInline(admin.TabularInline):
+	model = ChoiceMoneyPreReq
+	extra = 1
+	max_num = 1
+
 class ScenarioStatPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioStatPreReq
 
 class ChoiceItemPreReqInline(admin.TabularInline):
 	model = ChoiceItemPreReq
+	extra = 1
+	max_num = 1
 
 class ScenarioItemPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioItemPreReq
@@ -52,12 +64,12 @@ class ScenarioAdmin(EnhancedModelAdmin):
 
 class ChoiceAdmin(admin.ModelAdmin):
 	model = Choice
-	inlines = [ChoiceStatPreReqInline,ResultInline]
+	inlines = [ChoiceStatPreReqInline,ResultInline,ChoiceMoneyPreReqInline]
 	search_fields = ['title', 'description']
 
 class ResultAdmin(admin.ModelAdmin):
 	model = Result
-	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline]
+	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline, HealthOutcomeInline]
 	search_fields = ['title', 'description']
 
 

@@ -71,6 +71,7 @@ class ResultInline(LinkedInline):
 
 class ChoiceStatPreReqInline(admin.TabularInline):
 	model = ChoiceStatPreReq
+	extra = 1
 
 class ChoiceMoneyPreReqInline(admin.TabularInline):
 	model = ChoiceMoneyPreReq
@@ -79,11 +80,11 @@ class ChoiceMoneyPreReqInline(admin.TabularInline):
 
 class ScenarioStatPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioStatPreReq
+	extra = 1
 
 class ChoiceItemPreReqInline(admin.TabularInline):
 	model = ChoiceItemPreReq
 	extra = 1
-	max_num = 1
 
 class ScenarioItemPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioItemPreReq
@@ -103,7 +104,7 @@ class ScenarioAdmin(admin.ModelAdmin):
 
 class ChoiceAdmin(admin.ModelAdmin):
 	model = Choice
-	inlines = [ChoiceStatPreReqInline,ChoiceMoneyPreReqInline,ResultInline]
+	inlines = [ChoiceStatPreReqInline,ChoiceItemPreReqInline,ChoiceMoneyPreReqInline,ResultInline]
 	search_fields = ['title', 'description']
 
 class ResultAdmin(admin.ModelAdmin):

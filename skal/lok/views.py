@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -83,8 +83,15 @@ def scenario(request, scenario_id):
 	current_character = Character.objects.get(player=request.user.id)
 	choices = list(Choice.objects.filter(scenario=scenario_id))
 	for choice in choices:
-		if (not choice.valid_for(current_character) and not choice.visible):
+		if not choice.valid_for(current_character) and not choice.visible:
 			choices.remove(choice)
+		else:
+			if not choice.valid_for(current_character):
+				choice.invalid = True
+			choice.required_items = ChoiceItemPreReq.objects.filter(choice=choice.pk)
+			choice.required_stats = ChoiceStatPreReq.objects.filter(choice=choice.pk,minimum__gt=0)
+			if (ChoiceMoneyPreReq.objects.filter(choice=choice.pk)):
+				choice.required_money = ChoiceMoneyPreReq.objects.get(choice=choice.pk)
 	return render_to_response('lok/scenario.html', {'scenario': scenario, 'choices': choices}, context_instance=RequestContext(request))
 	
 

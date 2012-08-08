@@ -3,14 +3,34 @@
 {% if scenario %}
 <h1>{{scenario.title}}</h1>
 <p>{{scenario.description}}</p>
-{% for choice in choices %}
+	{% for choice in choices %}
 <h2>{{choice.title}}</h2>
 <p>{{choice.description}}</p>
+		{% if choice.required_stats %}
+<p>This choice requires the following stats: </p>
+			{% for stat in choice.required_stats %}
+				{% if stat.minimum > 0 %}
+<p>{{stat.stat.name}} at least level {{stat.minimum}}.</p>
+				{% endif %}
+			{% endfor %}
+		{% endif %}
+		{% if choice.required_items %}
+			{% for item in choice.required_items %}
+<p>Need at least {{item.minimum}} {{item.item.name}}.</p>
+			{% endfor %}
+		{% endif %}
+		{% if choice.required_money %}
+<p>Need at least {{choice.required_money}} royals.</p>
+		{% endif %}
+		{% if not choice.invalid %}
 <form method="post" action="/lok/choice/{{choice.id}}/">
 {% csrf_token %}
 	<input type="submit" value="Do this!"/> 
 </form>
-{% endfor %}
+		{% else %}
+<p>You cannot attempt this choice at this time.</p>
+		{% endif %}
+	{% endfor %}
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
 {% endif %}

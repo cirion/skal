@@ -98,8 +98,8 @@ def result(request, result_id):
 def choice(request, choice_id):
 	current_character = Character.objects.get(player=request.user.id)
 	current_character.update_actions()
-	if current_character.actions < 0:
-		return render_to_response('lok/wait.html', {'time': current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)})
+	if current_character.actions < 1:
+		return render_to_response('lok/wait.html', {'time': (current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)).seconds})
 	choice = Choice.objects.get(pk=choice_id)
 	# TODO: Just 1 now, but will have multiples in the next phase, and will need to pick outcome (success, failure, rare success)
 	result = Result.objects.get(choice=choice.pk)

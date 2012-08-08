@@ -245,6 +245,7 @@ class Character(models.Model):
 		while datetime.utcnow().replace(tzinfo=utc) > self.refill_time and self.actions < Character.MAX_ACTIONS:
 			self.actions = self.actions + 1
 			self.refill_time = self.refill_time + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
+		self.save()
 	def max_health(self):
 		# Need to figure out how to grow this...
 		best_stat = CharacterStat.objects.all().order_by('-value')[0]

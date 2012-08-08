@@ -1,4 +1,6 @@
 from django.db import models
+from datetime import datetime, timedelta
+from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from lok.utils import level_from_value as level_from_value
 from lok.utils import value_from_level as value_from_level
@@ -225,6 +227,9 @@ class HealthOutcome(models.Model):
 		return str(self.amount) + " health"
 
 class Character(models.Model):
+	MAX_ACTIONS = 20
+	#ACTION_RECHARGE_TIME_SECS = 900
+	ACTION_RECHARGE_TIME_SECS = 30
 	player = models.ForeignKey(User)
 	name = models.CharField(max_length=20)
 	created = models.DateTimeField(auto_now_add=True)
@@ -232,14 +237,23 @@ class Character(models.Model):
 	gender = models.IntegerField(choices=GENDER_CHOICES)
 	current_health = models.IntegerField()
 	total_choices = models.IntegerField(default=0)
+	actions = models.IntegerField(default=20)
+	refill_time = models.DateTimeField()
 	def __unicode__(self):
 		return self.name
+	def update_actions(self):
+		while datetime.utcnow().replace(tzinfo=utc) > self.refill_time and self.actions < Character.MAX_ACTIONS:
+			self.actions = self.actions + 1
+			self.refill_time = self.refill_time + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
 	def max_health(self):
 		# Need to figure out how to grow this...
 		best_stat = CharacterStat.objects.all().order_by('-value')[0]
 		return level_from_value(best_stat.value)
 	def update_with_result(self, result):
 		changes = list()
+		if self.actions == Character.MAX_ACTIONS:
+			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
+		self.actions = self.actions - 1
 		stat_outcomes = StatOutcome.objects.filter(choice = result.pk)
 		for outcome in stat_outcomes:
 			stat, created = CharacterStat.objects.get_or_create(character=self, stat=outcome.stat)
@@ -344,6 +358,7 @@ class Change(models.Model):
 	TYPE_PLOT = 4
 	TYPE_ITEM = 5
 	TYPE_HEALTH = 6
+	TYPE_NO_ACTIONS = 7
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
@@ -351,6 +366,7 @@ class Change(models.Model):
 		(TYPE_PLOT, "Plot"),
 		(TYPE_ITEM, "Item"),
 		(TYPE_HEALTH, "Health"),
+		(TYPE_NO_ACTIONS, "Insufficient Actions"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()

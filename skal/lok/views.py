@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+from django.utils.timezone import utc
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate
@@ -48,6 +50,7 @@ def story(request):
 	if not Character.objects.filter(player=request.user.id):
 		return HttpResponseRedirect('/lok/create/')
 	current_character = Character.objects.get(player=request.user.id)
+	current_character.update_actions()
 	scenarios = list(Scenario.objects.all())
 	pseudo = Random()
 	pseudo.seed(current_character.total_choices)
@@ -58,7 +61,7 @@ def story(request):
 		scenario = scenarios.pop(0)
 		if (scenario.valid_for(current_character)):
 			out_scenarios.append(scenario)
-	return render_to_response('lok/story.html', {'scenarios': out_scenarios})
+	return render_to_response('lok/story.html', {'scenarios': out_scenarios, 'actions': current_character.actions})
 
 def check_auth(request):
 	username = request.POST['username']
@@ -94,6 +97,9 @@ def result(request, result_id):
 @login_required
 def choice(request, choice_id):
 	current_character = Character.objects.get(player=request.user.id)
+	current_character.update_actions()
+	if current_character.actions < 0:
+		return render_to_response('lok/wait.html', {'time': current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)})
 	choice = Choice.objects.get(pk=choice_id)
 	# TODO: Just 1 now, but will have multiples in the next phase, and will need to pick outcome (success, failure, rare success)
 	result = Result.objects.get(choice=choice.pk)

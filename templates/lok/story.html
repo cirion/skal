@@ -1,3 +1,6 @@
+<html>
+<body>
+<p>You have {{actions}} blank pages available to write your story.</p>
 {% if scenarios %}
 	{% for scenario in scenarios %}
 	<h1><a href="/lok/scenario/{{scenario.id}}">{{scenario.title }}</a></h1>
@@ -6,3 +9,5 @@
 {% else %}
 	<p>Whoops! There should be some stories here for you. Sorry about that, please check back soon!</p>
 {% endif %}
+</body>
+</html>

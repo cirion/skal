@@ -10,6 +10,20 @@ GENDER_CHOICES = (
 	(GENDER_MALE, "Male"),
 )
 
+def valid_for_plot_pre_reqs(character, pre_reqs):
+	if pre_reqs:
+		try:
+			for pre_req in pre_reqs:
+				if pre_req.value == 0 and CharacterPlot.objects.filter(character = character.pk, plot = pre_req.plot):
+					return False
+				elif pre_req.value > 0 and CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != pre_req.value:
+					return False
+		except CharacterStat.DoesNotExist:
+			return False
+		except CharacterPlot.DoesNotExist:
+			return False
+	return True
+
 def valid_for_stat_pre_reqs(character, pre_reqs):
 	if pre_reqs:
 		try:
@@ -63,6 +77,9 @@ class Scenario(models.Model):
 		pre_reqs = ScenarioItemPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_item_pre_reqs(character,pre_reqs):
 			return False
+		pre_reqs = ScenarioPlotPreReq.objects.filter(scenario=self.pk)
+		if not valid_for_plot_pre_reqs(character,pre_reqs):
+			return False
 		return True
 
 class Choice(models.Model):
@@ -83,6 +100,8 @@ class Choice(models.Model):
 
 class Plot(models.Model):
 	name = models.CharField(max_length=100)
+	visible = models.BooleanField(default=False)
+	description = models.TextField(max_length=2000)
 	def __unicode__(self):
 		return self.name
 

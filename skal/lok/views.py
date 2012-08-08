@@ -52,7 +52,7 @@ def story(request):
 	pseudo = Random()
 	pseudo.seed(current_character.total_choices)
 	pseudo.shuffle(scenarios)
-	max_scenarios = 2
+	max_scenarios = 5
 	out_scenarios = list()
 	while (len(out_scenarios) < max_scenarios and scenarios):
 		scenario = scenarios.pop(0)

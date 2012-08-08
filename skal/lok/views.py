@@ -122,7 +122,7 @@ def choice(request, choice_id):
 	elif len(results) > 1:
 		result = results[weighted_choice(results)]
 	response = HttpResponseRedirect(reverse('lok.views.result', args=(result.id,)))
-	changes = current_character.update_with_result(result)
+	changes = current_character.update_with_result(result,stat_pre_reqs)
 	request.session['changes'] = changes
 	return response
 

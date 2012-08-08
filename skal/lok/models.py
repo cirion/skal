@@ -262,7 +262,7 @@ class Character(models.Model):
 		# Need to figure out how to grow this...
 		best_stat = CharacterStat.objects.all().order_by('-value')[0]
 		return level_from_value(best_stat.value)
-	def update_with_result(self, result):
+	def update_with_result(self, result, pre_reqs):
 		changes = list()
 		if self.actions == Character.MAX_ACTIONS:
 			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
@@ -274,9 +274,14 @@ class Character(models.Model):
 				change = Change(type=Change.TYPE_INCREMENT)
 				change.old = stat.value
 				oldlevel = level_from_value(stat.value)
+				oldvalue = stat.value
 				change.name = stat.stat.name
-				stat.value += outcome.amount
-				change.amount = outcome.amount
+				# If we succeeded using a maxed stat, it can only increase by 1 point.
+				if (pre_reqs.filter(stat=outcome.stat) and pre_reqs.get(stat=outcome.stat).maximum <= oldlevel):
+					stat.value += 1
+				else:
+					stat.value += outcome.amount
+				change.amount = stat.value - oldvalue
 				change.new = stat.value
 				newlevel = level_from_value(stat.value)
 				if oldlevel != newlevel:

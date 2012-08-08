@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import bisect
 from django.utils.timezone import utc
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -55,7 +56,7 @@ def story(request):
 	pseudo = Random()
 	pseudo.seed(current_character.total_choices)
 	pseudo.shuffle(scenarios)
-	max_scenarios = 5
+	max_scenarios = 10
 	out_scenarios = list()
 	while (len(out_scenarios) < max_scenarios and scenarios):
 		scenario = scenarios.pop(0)
@@ -102,9 +103,36 @@ def choice(request, choice_id):
 		return render_to_response('lok/wait.html', {'time': (current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)).seconds})
 	choice = Choice.objects.get(pk=choice_id)
 	# TODO: Just 1 now, but will have multiples in the next phase, and will need to pick outcome (success, failure, rare success)
-	result = Result.objects.get(choice=choice.pk)
+	successes = Result.objects.filter(choice=choice.pk, type=Result.SUCCESS)
+	failures = Result.objects.filter(choice=choice.pk, type=Result.FAILURE)
+	# Check to see if this is a challenge, and if so, if there are any failures.
+	stat_pre_reqs = ChoiceStatPreReq.objects.filter(choice=choice.pk)
+	failed = False
+	if (stat_pre_reqs and failures):
+		for stat_pre_req in stat_pre_reqs:
+			if not stat_pre_req.challenge(current_character):
+				failed = True
+	if failed:
+		results = failures
+	else:
+		results = successes
+	# If there are multiple successes/failures, choose the appropriate one based on its weight.
+	if len(results) == 1:
+		result = results[0]
+	elif len(results) > 1:
+		result = results[weighted_choice(results)]
 	response = HttpResponseRedirect(reverse('lok.views.result', args=(result.id,)))
 	changes = current_character.update_with_result(result)
 	request.session['changes'] = changes
 	return response
 
+def weighted_choice(weights):
+    totals = []
+    running_total = 0
+
+    for w in weights:
+        running_total += w.weight
+        totals.append(running_total)
+
+    rnd = random.random() * running_total
+    return bisect.bisect_right(totals, rnd)

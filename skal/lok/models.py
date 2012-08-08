@@ -4,6 +4,8 @@ from django.utils.timezone import utc
 from django.contrib.auth.models import User
 from lok.utils import level_from_value as level_from_value
 from lok.utils import value_from_level as value_from_level
+import random
+from random import Random
 
 GENDER_FEMALE = 1
 GENDER_MALE = 2
@@ -162,6 +164,16 @@ class ChoiceStatPreReq(models.Model):
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
 		return str(self.stat)
+	def challenge(self, character):
+		try:
+			value = CharacterStat.objects.get(stat = self.stat).level()
+		except CharacterStat.DoesNotExist:
+			value = 0
+		if value >= self.maximum:
+			return True
+		# Our odds of success are our progress between minimum and maximum.
+		odds = float(value - self.minimum) / float(self.maximum - self.minimum)
+		return random.random() < odds
 
 class ChoiceItemPreReq(models.Model):
 	choice = models.ForeignKey(Choice)

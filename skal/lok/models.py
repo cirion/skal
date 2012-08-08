@@ -175,9 +175,18 @@ class ChoiceMoneyPreReq(models.Model):
 		return str(self.amount)
 
 class Result(models.Model):
+	SUCCESS = 1
+	FAILURE = 2
+	CHOICES = (
+		(SUCCESS, "Success"),
+		(FAILURE, "Failure"),
+	)
+	type = models.IntegerField(choices=CHOICES, default=SUCCESS)
+	weight = models.IntegerField(default=1)
 	choice = models.ForeignKey(Choice)
 	title = models.CharField(max_length=100)
 	description = models.TextField(max_length=4000)
+	
 	def __unicode__(self):
 		return self.title
 

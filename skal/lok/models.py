@@ -97,8 +97,10 @@ class Choice(models.Model):
 		return True
 
 class Plot(models.Model):
+	MAX_LEVEL = 2
 	name = models.CharField(max_length=100)
 	visible = models.BooleanField(default=False)
+	achievement = models.BooleanField(default = False)
 	description = models.TextField(max_length=2000)
 	def __unicode__(self):
 		return self.name
@@ -124,7 +126,6 @@ class Stat(models.Model):
 	name = models.CharField(max_length=50)
 	def __unicode__(self):
 		return self.name
-	
 	
 class ScenarioStatPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)

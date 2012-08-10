@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -35,7 +35,9 @@ def character(request):
 	skills = list(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_SKILL))
 	for skill in skills:
 		skill.value = level_from_value(skill.value)
-	items = CharacterItem.objects.all()
+	plots = CharacterPlot.objects.filter(character = current_character, plot__visible = True, plot__achievement = False, value__lt = Plot.MAX_LEVEL)
+	achievements = CharacterPlot.objects.filter(character = current_character, plot__achievement = True)
+	items = CharacterItem.objects.filter(character = current_character)
 	fame = level_from_value(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME)[0].value)
 	esteems = CharacterStat.objects.filter(character = current_character, stat__type = Stat.TYPE_ESTEEM)
 	for esteem in esteems:
@@ -44,7 +46,7 @@ def character(request):
 		title = "Mr."
 	else:
 		title = "Ms."
-	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'title': title})
+	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plots, 'achievements': achievements, 'title': title})
 
 @login_required
 def story(request):

@@ -18,6 +18,18 @@
 {%for item in items %}
 <li>{{item.quantity}} {{item.item.name}}</li>
 {% endfor %}
+{% if plots %}
+<p>You are involved in the following tales.</p>
+{%for plot in plots %}
+<li>{{plot.plot.description}}</li>
+{% endfor  %}
+{% endif %}
+{% if achievements %}
+<p>You have become famous for the following deeds.</p>
+{% for achievement in achievements %}
+<li>{{achievement.plot.description}}</li>
+{% endfor %}
+{% endif %}
 </ul>
 </body>
 </html>

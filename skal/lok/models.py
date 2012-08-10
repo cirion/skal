@@ -6,6 +6,8 @@ from lok.utils import level_from_value as level_from_value
 from lok.utils import value_from_level as value_from_level
 import random
 from random import Random
+import logging
+logger = logging.getLogger(__name__)
 
 GENDER_FEMALE = 1
 GENDER_MALE = 2
@@ -18,22 +20,22 @@ def valid_for_plot_pre_reqs(character, pre_reqs):
 	if pre_reqs:
 		try:
 			for pre_req in pre_reqs:
-				if pre_req.value == 0 and CharacterPlot.objects.filter(character = character.pk, plot = pre_req.plot):
+				if pre_req.value == 0 and (CharacterPlot.objects.filter(character = character.pk, plot = pre_req.plot) or CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != 0):
 					return False
 				elif pre_req.value > 0 and CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != pre_req.value:
 					return False
-		except CharacterStat.DoesNotExist:
-			return False
 		except CharacterPlot.DoesNotExist:
 			return False
 	return True
 
-def valid_for_stat_pre_reqs(character, pre_reqs):
+def valid_for_stat_pre_reqs(character, pre_reqs, enforceMax):
 	if pre_reqs:
 		try:
 			for pre_req in pre_reqs:
 				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
-				if level_from_value(character_stat.value) < pre_req.minimum or level_from_value(character_stat.value) > pre_req.maximum:
+				if level_from_value(character_stat.value) < pre_req.minimum:
+					return False
+				elif enforceMax and level_from_value(character_stat.value) > pre_req.maximum:
 					return False
 		except CharacterStat.DoesNotExist:
 			return False
@@ -47,17 +49,6 @@ def valid_for_item_pre_reqs(character, pre_reqs):
 				if character_item.quantity < pre_req.minimum:
 					return False
 		except CharacterItem.DoesNotExist:
-			return False;
-	return True;
-
-def valid_for_plot_pre_req(character, pre_reqs):
-	if pre_reqs:
-		try:
-			for pre_req in pre_req:
-				character_plot = CharacterPlot.objects.get(character=character.pk, plot=pre_req.plot)
-				if character_plot.value != pre_req.value:
-					return False
-		except CharacterPlot.DoesNotExist:
 			return False;
 	return True;
 
@@ -76,7 +67,7 @@ class Scenario(models.Model):
 		return self.title
 	def valid_for(self, character):
 		pre_reqs = ScenarioStatPreReq.objects.filter(scenario=self.pk)
-		if not valid_for_stat_pre_reqs(character,pre_reqs):
+		if not valid_for_stat_pre_reqs(character,pre_reqs, True):
 			return False
 		pre_reqs = ScenarioItemPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_item_pre_reqs(character,pre_reqs):
@@ -95,10 +86,13 @@ class Choice(models.Model):
 		return self.title
 	def valid_for(self, character):
 		pre_reqs = ChoiceStatPreReq.objects.filter(choice=self.pk)
-		if not valid_for_stat_pre_reqs(character,pre_reqs):
+		if not valid_for_stat_pre_reqs(character,pre_reqs, False):
 			return False
 		pre_reqs = ChoiceItemPreReq.objects.filter(choice=self.pk)
 		if not valid_for_item_pre_reqs(character,pre_reqs):
+			return False
+		pre_reqs = ChoicePlotPreReq.objects.filter(choice=self.pk)
+		if not valid_for_plot_pre_reqs(character,pre_reqs):
 			return False
 		return True
 
@@ -148,6 +142,13 @@ class ScenarioItemPreReq(models.Model):
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
 		return str(self.minimum) + " " + self.item.name
+
+class ChoicePlotPreReq(models.Model):
+	choice = models.ForeignKey(Choice)
+	plot = models.ForeignKey(Plot)
+	value = models.IntegerField()
+	def __unicode__(self):
+		return self.plot.name + " " + str(self.value)
 
 class ScenarioPlotPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)

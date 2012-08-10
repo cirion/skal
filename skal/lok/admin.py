@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -73,6 +73,10 @@ class ChoiceStatPreReqInline(admin.TabularInline):
 	model = ChoiceStatPreReq
 	extra = 1
 
+class ChoicePlotPreReqInline(admin.TabularInline):
+	model = ChoicePlotPreReq
+	extra = 1
+
 class ChoiceMoneyPreReqInline(admin.TabularInline):
 	model = ChoiceMoneyPreReq
 	extra = 1
@@ -104,7 +108,7 @@ class ScenarioAdmin(admin.ModelAdmin):
 
 class ChoiceAdmin(admin.ModelAdmin):
 	model = Choice
-	inlines = [ChoiceStatPreReqInline,ChoiceItemPreReqInline,ChoiceMoneyPreReqInline,ResultInline]
+	inlines = [ChoiceStatPreReqInline,ChoiceItemPreReqInline,ChoiceMoneyPreReqInline,ResultInline,ChoicePlotPreReqInline]
 	search_fields = ['title', 'description']
 
 class ResultAdmin(admin.ModelAdmin):

@@ -49,8 +49,14 @@ def valid_for_item_pre_reqs(character, pre_reqs):
 				if character_item.quantity < pre_req.minimum:
 					return False
 		except CharacterItem.DoesNotExist:
-			return False;
-	return True;
+			return False
+	return True
+
+def valid_for_level_pre_reqs(character, pre_reqs):
+	if pre_reqs:
+		if character.level() < pre_reqs[0].minimum:
+			return False
+	return True
 
 class Scenario(models.Model):
 	title = models.CharField(max_length=100)
@@ -74,6 +80,9 @@ class Scenario(models.Model):
 			return False
 		pre_reqs = ScenarioPlotPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_plot_pre_reqs(character,pre_reqs):
+			return False
+		pre_reqs = ScenarioLevelPreReq.objects.filter(scenario=self.pk)
+		if not valid_for_level_pre_reqs(character,pre_reqs):
 			return False
 		return True
 
@@ -143,6 +152,13 @@ class ScenarioItemPreReq(models.Model):
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
 		return str(self.minimum) + " " + self.item.name
+
+class ScenarioLevelPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	minimum = models.IntegerField()
+	maximum = models.IntegerField(default=1000)
+	def __unicode__(self):
+		return "Level " + str(self.minimum) + "-" + str(self.maximum)
 
 class ChoicePlotPreReq(models.Model):
 	choice = models.ForeignKey(Choice)
@@ -245,7 +261,7 @@ class Character(models.Model):
 	#ACTION_RECHARGE_TIME_SECS = 900
 	ACTION_RECHARGE_TIME_SECS = 30
 	player = models.ForeignKey(User)
-	name = models.CharField(max_length=20)
+	name = models.CharField(max_length=20,unique=True)
 	created = models.DateTimeField(auto_now_add=True)
 	money = models.IntegerField(default=0)
 	gender = models.IntegerField(choices=GENDER_CHOICES)
@@ -262,6 +278,9 @@ class Character(models.Model):
 		self.save()
 	def max_health(self):
 		# Need to figure out how to grow this...
+		best_stat = CharacterStat.objects.all().order_by('-value')[0]
+		return level_from_value(best_stat.value)
+	def level(self):
 		best_stat = CharacterStat.objects.all().order_by('-value')[0]
 		return level_from_value(best_stat.value)
 	def update_with_result(self, result, pre_reqs):

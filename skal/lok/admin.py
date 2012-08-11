@@ -1,7 +1,6 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq
 from functools import partial
 from django.forms import MediaDefiningClass
-
 
 from admin_enhancer import admin as enhanced_admin
 
@@ -73,6 +72,11 @@ class ChoiceStatPreReqInline(admin.TabularInline):
 	model = ChoiceStatPreReq
 	extra = 1
 
+class ScenarioLevelPreReqInline(admin.TabularInline):
+	model = ScenarioLevelPreReq
+	extra = 1
+	max_num = 1
+
 class ChoicePlotPreReqInline(admin.TabularInline):
 	model = ChoicePlotPreReq
 	extra = 1
@@ -102,7 +106,7 @@ class ChoiceInline(enhanced_admin.EnhancedAdminMixin,LinkedInline):
 	model = Choice
 
 class ScenarioAdmin(admin.ModelAdmin):
-	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline]
+	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ScenarioLevelPreReqInline]
 	#list_display = ('link_to_choice',)
 	search_fields = ['title', 'description']
 

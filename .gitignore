@@ -3,4 +3,4 @@
 *.bak
 *.tmp
 skal/skal/settings.py
-
+*.swp

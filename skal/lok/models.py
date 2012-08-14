@@ -117,6 +117,34 @@ class Plot(models.Model):
 class Item(models.Model):
 	name = models.CharField(max_length=100)
 	value = models.IntegerField(default=1)
+	sellable = models.BooleanField(default=True)
+	def __unicode__(self):
+		return self.name
+
+class Equipment(Item):
+	TYPE_SWORD = 1
+	TYPE_BASHING = 2
+	TYPE_BOW = 3
+	TYPE_FEET = 4
+	TYPE_CLOAK = 5
+	TYPE_CLOTHES = 6
+	TYPE_GLOVES = 7
+	TYPE_RING = 8
+	TYPE_NECK = 9
+	TYPE_ARMOR = 10
+	TYPE_CHOICES = (
+		(TYPE_SWORD, "Sword"),
+		(TYPE_BASHING, "Bashing"),
+		(TYPE_BOW, "Bow"),
+		(TYPE_FEET, "Feet"),
+		(TYPE_CLOAK, "Cloak"),
+		(TYPE_CLOTHES, "Clothes"),
+		(TYPE_GLOVES, "Gloves"),
+		(TYPE_RING, "Ring"),
+		(TYPE_NECK, "Neck"),
+		(TYPE_ARMOR, "Armor")
+	)
+	type = models.IntegerField(choices=TYPE_CHOICES)
 	def __unicode__(self):
 		return self.name
 
@@ -135,6 +163,13 @@ class Stat(models.Model):
 	name = models.CharField(max_length=50)
 	def __unicode__(self):
 		return self.name
+
+class EquipmentStat(models.Model):
+	equipment = models.ForeignKey(Equipment)
+	stat = models.ForeignKey(Stat)
+	amount = models.IntegerField()
+	def __unicode__(self):
+		return str(self.amount) + " points of " + self.stat.name + " for " + self.equipment.name
 	
 class ScenarioStatPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
@@ -269,6 +304,16 @@ class Character(models.Model):
 	total_choices = models.IntegerField(default=0)
 	actions = models.IntegerField(default=20)
 	refill_time = models.DateTimeField()
+	sword = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_SWORD}, null=True, blank=True, related_name='+')
+	bashing = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_BASHING}, null=True, blank=True, related_name='+')
+	bow = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_BOW}, null=True, blank=True, related_name='+')
+	feet = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_FEET}, null=True, blank=True, related_name='+')
+	cloak= models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_CLOAK}, null=True, blank=True, related_name='+')
+	clothing= models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_CLOTHES}, null=True, blank=True, related_name='+')
+	gloves = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_GLOVES}, null=True, blank=True, related_name='+')
+	ring = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_RING}, null=True, blank=True, related_name='+')
+	neck = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_NECK}, null=True, blank=True, related_name='+')
+	armor = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_ARMOR}, null=True, blank=True, related_name='+')
 	def __unicode__(self):
 		return self.name
 	def update_actions(self):

@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -46,7 +46,17 @@ def character(request):
 		title = "Mr."
 	else:
 		title = "Ms."
-	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plots, 'achievements': achievements, 'title': title})
+	swords = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_SWORD)
+	bashing = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_BASHING)
+	bows = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_BOW)
+	feet = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_FEET)
+	cloaks = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_CLOAK)
+	clothes = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_CLOTHES)
+	gloves = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_GLOVES)
+	rings = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_RING)
+	neck = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_NECK)
+	armors = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_ARMOR)
+	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plots, 'achievements': achievements, 'title': title, 'swords': swords, 'bashing': bashing, 'bows': bows, 'feet': feet, 'cloaks': cloaks, 'clothes': clothes, 'gloves': gloves, 'rings': rings, 'neck': neck, 'armors': armors})
 
 @login_required
 def story(request):
@@ -103,6 +113,17 @@ def result(request, result_id):
 	# Storing changes in the session so we can report on what happened after we're redirected from the POST. This basically lets us (a) protect against multiple submissions, and (b) give useful feedback even if the page load was interrupted. In a production environment, we'd need to more carefully monitor what data we're keeping in session and clear it out after they move on to another page.
 	changes = request.session.get('changes')
 	return render_to_response('lok/result.html', {'result': result, 'changes': changes})
+
+@login_required
+def equip(request, fieldname, equip_id):
+	current_character = Character.objects.get(player=request.user.id)
+	if (not CharacterItem.objects.filter(character=current_character,item__id=equip_id)):
+		return HttpResponseRedirect('/lok/character/')
+	#fieldname = "sword"
+	setattr(current_character, fieldname, Equipment.objects.get(id=equip_id))
+	#current_character.sword = Equipment.objects.get(id=equip_id)
+	current_character.save()
+	return HttpResponseRedirect('/lok/character/')
 
 @login_required
 def choice(request, choice_id):

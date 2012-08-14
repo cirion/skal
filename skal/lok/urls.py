@@ -6,6 +6,7 @@ urlpatterns = patterns('lok.views',
 	url(r'^character/$', 'character'),
 	url(r'^scenario/(?P<scenario_id>\d+)/$', 'scenario'),
 	url(r'^choice/(?P<choice_id>\d+)/$', 'choice'),
+	url(r'^equip/(?P<fieldname>\w+)/(?P<equip_id>\d+)/$', 'equip'),
 	url(r'^result/(?P<result_id>\d+)/$', 'result'),
 )
 

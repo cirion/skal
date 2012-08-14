@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -140,6 +140,14 @@ class StatAdmin(admin.ModelAdmin):
 class ItemAdmin(admin.ModelAdmin):
 	model = Item
 
+class EquipmentStatInline(admin.TabularInline):
+	model = EquipmentStat
+	extra = 1
+
+class EquipmentAdmin(admin.ModelAdmin):
+	model = Equipment
+	inlines = [EquipmentStatInline]
+
 class PlotAdmin(admin.ModelAdmin):
 	model = Plot
 
@@ -150,3 +158,4 @@ admin.site.register(Character, CharacterAdmin)
 admin.site.register(Stat, StatAdmin)
 admin.site.register(Plot, PlotAdmin)
 admin.site.register(Item, ItemAdmin)
+admin.site.register(Equipment, EquipmentAdmin)

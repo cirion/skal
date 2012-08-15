@@ -34,7 +34,7 @@ def character(request):
 	current_character = Character.objects.get(player=request.user.id)
 	skills = list(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_SKILL))
 	for skill in skills:
-		skill.value = level_from_value(skill.value)
+		skill.value = level_from_value(skill.value) + current_character.stat_bonus(skill.stat)
 	plots = CharacterPlot.objects.filter(character = current_character, plot__visible = True, plot__achievement = False, value__lt = Plot.MAX_LEVEL)
 	achievements = CharacterPlot.objects.filter(character = current_character, plot__achievement = True)
 	items = CharacterItem.objects.filter(character = current_character)
@@ -68,7 +68,7 @@ def story(request):
 	pseudo = Random()
 	pseudo.seed(current_character.total_choices)
 	pseudo.shuffle(scenarios)
-	max_scenarios = 10
+	max_scenarios = 50
 	out_scenarios = list()
 	while (len(out_scenarios) < max_scenarios and scenarios):
 		scenario = scenarios.pop(0)

@@ -20,7 +20,7 @@ def valid_for_plot_pre_reqs(character, pre_reqs):
 	if pre_reqs:
 		try:
 			for pre_req in pre_reqs:
-				if pre_req.value == 0 and (CharacterPlot.objects.filter(character = character.pk, plot = pre_req.plot) or CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != 0):
+				if pre_req.value == 0 and ((CharacterPlot.objects.filter(character = character.pk, plot = pre_req.plot) and CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != 0)):
 					return False
 				elif pre_req.value > 0 and CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != pre_req.value:
 					return False
@@ -32,11 +32,14 @@ def valid_for_stat_pre_reqs(character, pre_reqs, enforceMax):
 	if pre_reqs:
 		try:
 			for pre_req in pre_reqs:
-				character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
-				if level_from_value(character_stat.value) < pre_req.minimum:
-					return False
-				elif enforceMax and level_from_value(character_stat.value) > pre_req.maximum:
-					return False
+				if pre_req.minimum > 0:
+					character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
+					level = level_from_value(character_stat.value)
+					level += character.stat_bonus(character_stat.stat)
+					if level_from_value(level) < pre_req.minimum:
+						return False
+					elif enforceMax and level_from_value(character_stat.value) > pre_req.maximum:
+						return False
 		except CharacterStat.DoesNotExist:
 			return False
 	return True
@@ -222,6 +225,7 @@ class ChoiceStatPreReq(models.Model):
 			value = CharacterStat.objects.get(stat = self.stat).level()
 		except CharacterStat.DoesNotExist:
 			value = 0
+		value += character.stat_bonus(self.stat)
 		if value >= self.maximum:
 			return True
 		# Our odds of success are our progress between minimum and maximum.
@@ -291,6 +295,13 @@ class HealthOutcome(models.Model):
 	def __unicode__(self):
 		return str(self.amount) + " health"
 
+def get_stat_bonus(item, stat):
+	stats = EquipmentStat.objects.filter(equipment=item, stat=stat)
+	bonus = 0
+	for estat in stats:
+		bonus += estat.amount
+	return bonus
+
 class Character(models.Model):
 	MAX_ACTIONS = 20
 	#ACTION_RECHARGE_TIME_SECS = 900
@@ -316,6 +327,19 @@ class Character(models.Model):
 	armor = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_ARMOR}, null=True, blank=True, related_name='+')
 	def __unicode__(self):
 		return self.name
+	def stat_bonus(self, stat):
+		bonus = 0
+		bonus += get_stat_bonus(self.sword, stat)
+		bonus += get_stat_bonus(self.bashing, stat)
+		bonus += get_stat_bonus(self.bow, stat)
+		bonus += get_stat_bonus(self.feet, stat)
+		bonus += get_stat_bonus(self.cloak, stat)
+		bonus += get_stat_bonus(self.clothing, stat)
+		bonus += get_stat_bonus(self.gloves, stat)
+		bonus += get_stat_bonus(self.ring, stat)
+		bonus += get_stat_bonus(self.neck, stat)
+		bonus += get_stat_bonus(self.armor, stat)
+		return bonus
 	def update_actions(self):
 		while datetime.utcnow().replace(tzinfo=utc) > self.refill_time and self.actions < Character.MAX_ACTIONS:
 			self.actions = self.actions + 1

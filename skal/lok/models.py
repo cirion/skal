@@ -91,11 +91,11 @@ class Scenario(models.Model):
 
 class Battle(Scenario):
 	ENEMY_SLASHING=1
-	ENEMY_ARMORED=2
+	ENEMY_BASHING=2
 	ENEMY_RANGED=3
 	TYPE_ENEMY = (
 		(ENEMY_SLASHING, "Slashing"),
-		(ENEMY_ARMORED, "Armored"),
+		(ENEMY_BASHING, "Bashing"),
 		(ENEMY_RANGED, "Ranged"),
 	)
 	enemy = models.IntegerField(choices=TYPE_ENEMY)
@@ -375,6 +375,15 @@ class Character(models.Model):
 			bashing_strength += self.bashing.amount
 		if CharacterStat.objects.filter(character=self, stat__name="Bashing"):
 			bashing_strength += level_from_value(CharacterStat.objects.get(character=self, stat__name="Bashing").value)
+		if battle.enemy == Battle.ENEMY_RANGED:
+			sword_strength = sword_strength - (5 + .1 * sword_strength)
+			bashing_strength = bashing_strength + (5 + .1 * bashing_strength)
+		elif battle.enemy == Battle.ENEMY_BASHING:
+			sword_strength = sword_strength + (5 + .1 * sword_strength)
+			bow_strength = bow_strength - (5 + .1 * bow_strength)
+		else:
+			bow_strength = bow_strength + (5 + .1 * bow_strength)
+			bashing_strength = bashing_strength - (5 + .1 * bashing_strength)
 		best_strength = 0
 		weapon = None
 		if bow_strength >= sword_strength and bow_strength >= bashing_strength:

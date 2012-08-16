@@ -1,0 +1,20 @@
+<html>
+<body>
+{% if battle %}
+<h1>{{battle.title}}</h1>
+<p>{{battle.description}}</p>
+{% if not weapon %}
+<p>You face this enemy using only your fists.</p>
+{% else %}
+<p>You believe your {{weapon}} will be most effective here.</p>
+{% endif %}
+<p>You figure your odds of success are around {{odds}}%</p>
+<form method="post" action="/lok/battle/{{battle.id}}/">
+{% csrf_token %}
+	<input type="submit" value="Fight!"/> 
+</form>
+{% else %}
+<p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
+{% endif %}
+</body>
+</html>

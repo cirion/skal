@@ -89,6 +89,18 @@ class Scenario(models.Model):
 			return False
 		return True
 
+class Battle(Scenario):
+	ENEMY_SLASHING=1
+	ENEMY_ARMORED=2
+	ENEMY_RANGED=3
+	TYPE_ENEMY = (
+		(ENEMY_SLASHING, "Slashing"),
+		(ENEMY_ARMORED, "Armored"),
+		(ENEMY_RANGED, "Ranged"),
+	)
+	enemy = models.IntegerField(choices=TYPE_ENEMY)
+	strength = models.IntegerField()
+
 class Choice(models.Model):
 	scenario = models.ForeignKey(Scenario)
 	title = models.CharField(max_length=100)
@@ -345,6 +357,43 @@ class Character(models.Model):
 			self.actions = self.actions + 1
 			self.refill_time = self.refill_time + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
 		self.save()
+	def odds_against(self, battle):
+		sword_strength = 0
+		bow_strength = 0
+		bashing_strength=0
+		if self.sword:
+			sword_strength=self.stat_bonus(Stat.objects.get(name="Swordfighting"))
+			if CharacterStat.objects.filter(character=self, stat__name="Swordfighting"):
+				sword_strength += level_from_value(CharacterStat.objects.get(character=self, stat__name="Swordfighting").value)
+		if self.bow:
+			bow_strength=self.stat_bonus(Stat.objects.get(name="Archery"))
+			
+			if CharacterStat.objects.filter(character=self, stat__name="Archery"):
+				bow_strength += level_from_value(CharacterStat.objects.get(character=self, stat__name="Archery").value)
+		# Unlike bows and swords, we can use bashing even without an item equipped.
+		if self.bashing:
+			bashing_strength += self.bashing.amount
+		if CharacterStat.objects.filter(character=self, stat__name="Bashing"):
+			bashing_strength += level_from_value(CharacterStat.objects.get(character=self, stat__name="Bashing").value)
+		best_strength = 0
+		weapon = None
+		if bow_strength >= sword_strength and bow_strength >= bashing_strength:
+			best_strength = bow_strength
+			weapon = self.bow
+		elif sword_strength >= bow_strength and sword_strength >= bashing_strength:
+			best_strength = bow_strength
+			weapon = self.sword
+		else:
+			best_strength = bashing_strength
+			weapon = self.bashing
+		# Phew! Now, calculate the delta!
+		odds = .5 + 0.05 * (best_strength - battle.strength)
+		# Can play around with this, but I think there's always a 5% chance of success or failure. (Nice D20 odds.)
+		if odds < .05:
+			odds = .05
+		elif odds > .95:
+			odds = .95
+		return {'odds': odds, 'weapon': weapon}
 	def max_health(self):
 		# Need to figure out how to grow this...
 		best_stat = CharacterStat.objects.all().order_by('-value')[0]

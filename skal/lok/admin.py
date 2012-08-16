@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -159,3 +159,4 @@ admin.site.register(Stat, StatAdmin)
 admin.site.register(Plot, PlotAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Equipment, EquipmentAdmin)
+admin.site.register(Battle, ScenarioAdmin)

@@ -91,20 +91,27 @@ def check_auth(request):
 
 @login_required
 def scenario(request, scenario_id):
-	scenario = Scenario.objects.get(pk=scenario_id)
-	current_character = Character.objects.get(player=request.user.id)
-	choices = list(Choice.objects.filter(scenario=scenario_id))
-	final_choices = list()
-	for choice in choices:
-		if choice.valid_for(current_character) or choice.visible:
-			if not choice.valid_for(current_character):
-				choice.invalid = True
-			choice.required_items = ChoiceItemPreReq.objects.filter(choice=choice.pk)
-			choice.required_stats = ChoiceStatPreReq.objects.filter(choice=choice.pk,minimum__gt=0)
-			if (ChoiceMoneyPreReq.objects.filter(choice=choice.pk)):
-				choice.required_money = ChoiceMoneyPreReq.objects.get(choice=choice.pk)
-			final_choices.append(choice)
-	return render_to_response('lok/scenario.html', {'scenario': scenario, 'choices': final_choices}, context_instance=RequestContext(request))
+		scenario = Scenario.objects.get(pk=scenario_id)
+		current_character = Character.objects.get(player=request.user.id)
+	#try:
+		battle = scenario.battle
+		result = current_character.odds_against(battle)
+		odds = result['odds']
+		weapon = result['weapon']
+		return render_to_response('lok/battle.html', {'battle': battle, 'choice': Choice.objects.get(scenario=scenario_id), 'odds': int(odds * 100), 'weapon': weapon}, context_instance=RequestContext(request))
+	#except Exception:
+		choices = list(Choice.objects.filter(scenario=scenario_id))
+		final_choices = list()
+		for choice in choices:
+			if choice.valid_for(current_character) or choice.visible:
+				if not choice.valid_for(current_character):
+					choice.invalid = True
+				choice.required_items = ChoiceItemPreReq.objects.filter(choice=choice.pk)
+				choice.required_stats = ChoiceStatPreReq.objects.filter(choice=choice.pk,minimum__gt=0)
+				if (ChoiceMoneyPreReq.objects.filter(choice=choice.pk)):
+					choice.required_money = ChoiceMoneyPreReq.objects.get(choice=choice.pk)
+				final_choices.append(choice)
+		return render_to_response('lok/scenario.html', {'scenario': scenario, 'choices': final_choices}, context_instance=RequestContext(request))
 	
 
 @login_required

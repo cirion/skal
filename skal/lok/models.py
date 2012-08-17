@@ -410,11 +410,38 @@ class Character(models.Model):
 	def level(self):
 		best_stat = CharacterStat.objects.all().order_by('-value')[0]
 		return level_from_value(best_stat.value)
-	def update_with_result(self, result, pre_reqs):
+	def update_with_result(self, result, pre_reqs, battle, block_death):
 		changes = list()
 		if self.actions == Character.MAX_ACTIONS:
 			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
 		self.actions = self.actions - 1
+
+		if battle:
+			# Increment the appropriate weapon skills. Always get 2pts in current weapon if it's a challenge, 1pt if it's easy.
+			odds = self.odds_against(battle)
+			if odds['odds'] > .5:
+				amount = 1
+			else:
+				amount = 2
+			if odds['weapon'] == self.sword:
+				stat = Stat.objects.get(name="Swordfighting")
+			elif odds['weapon'] == self.bow:
+				stat = Stat.objects.get(name="Archery")
+			else:
+				stat = Stat.objects.get(name="Bashing")
+			if (not CharacterStat.objects.filter(character=self,stat=stat)):
+				charstat = CharacterStat(character=self, stat=stat, value=0)
+			else:
+				charstat = CharacterStat.objects.get(character=self, stat=stat)
+			change = Change(type=Change.TYPE_INCREMENT)
+			change.name = stat.name
+			change.old = charstat.value
+			change.amount = amount
+			charstat.value += amount
+			change.new = charstat.value
+			charstat.save()
+			changes.append(change)
+
 		stat_outcomes = StatOutcome.objects.filter(choice = result.pk)
 		for outcome in stat_outcomes:
 			stat, created = CharacterStat.objects.get_or_create(character=self, stat=outcome.stat)
@@ -470,12 +497,65 @@ class Character(models.Model):
 			change = Change(type = Change.TYPE_HEALTH)
 			change.name = "health"
 			change.old = self.current_health
+
+			# If this was a fight, we have two chances to mitigate damage done. First dodge, then absorb.
+			if battle:
+				dodge_chance = self.stat_bonus(Stat.objects.get(name="Dodging"))
+				if CharacterStat.objects.filter(character=self, stat__name="Dodging"):
+					dodge_chance += level_from_value(CharacterStat.objects.get(character=self, stat__name="Dodging").value)
+			# Hard cap at 80% dodge rate. Should probably eventually turn this to a soft cap that kicks in much earlier. We also check on stat increase, but need to keep a check here as well to prevent someone reaching 100% through use of equipment.
+				if dodge_chance > 80:
+					dodge_chance = 80
+				if random.random() * 100 < dodge_chance:
+						# They dodged it! No damage done. Let them know how lucky they are.
+						changes.append(Change(type=Change.TYPE_DODGE))
+						outcome.amount = 0
+	
+				# Next, let them absorb the blow if they have armor.
+				armor_rating = self.stat_bonus(Stat.objects.get(name="Armor"))
+				if (armor_rating > 40):
+					armor_rating = 40
+				old_outcome = outcome.amount
+				outcome.amount = int(outcome.amount * (1.0 - float(armor_rating) * 2))
+				if old_outcome != outcome.amount:
+					changes.append(Change(type=Change.TYPE_ABSORBED, amount=old_outcome - outcome.amount))
+	
+				# See if they lucked out and gained an increase in dodge rating.
+				if dodge_chance < self.level():
+					# Definitely play around with this! Right now I'm thinking the odds of a dodge increase will range between 1-5%, depending on the ratio between the character's stealth, deviousness and their level.
+					max_dodgy = 0
+					if (CharacterStat.objects.filter(character=self, stat__name="Deviousness")):
+						max_dodgy=level_from_value(CharacterStat.objects.get(character=self,stat__name="Deviousness"))
+					if (CharacterStat.objects.filter(character=self, stat__name="Stealth")):
+						stealthy=level_from_value(CharacterStat.objects.get(character=self,stat__name="Stealth").value)
+						if stealthy > max_dodgy:
+							max_dodgy = stealthy
+					odds = 0.01 + (0.04 * (max_dodgy/self.level()))
+					if random.random() < odds:
+						# Congrats! You just got better at dodging!
+						dodgechange = Change(type=Change.TYPE_INCREMENT)
+						dodgechange.name = "Dodging"
+						if not CharacterStat.objects.filter(character=self, stat__name="Dodging"):
+							dodgechange.old = 0
+							stat = CharacterStat(character=self, stat=Stat.objects.get(name="Dodging"), value=10)
+							stat.save()
+						else:
+							stat = CharacterStat.objects.get(character=self, stat__name="Dodging")
+							dodgechange.old = stat.value
+							stat.value += 10
+							stat.save()
+						dodgechange.amount = 10
+						dodgechange.new = stat.value
+						changes.append(dodgechange)
+					
 			self.current_health += outcome.amount
-			if (self.current_health < 0):
+			if (self.current_health < 1 and block_death):
+				self.current_health = 1
+			elif (self.current_health < 0):
 				self.current_health = 0
-			if (self.current_health > self.max_health()):
+			elif (self.current_health > self.max_health()):
 				self.current_health = self.max_health()
-			else:
+			if (self.current_health != change.old):
 				change.new = self.current_health
 				change.amount = change.new - change.old
 				changes.append(change)
@@ -525,6 +605,11 @@ class Change(models.Model):
 	TYPE_ITEM = 5
 	TYPE_HEALTH = 6
 	TYPE_NO_ACTIONS = 7
+	TYPE_OUTCOME = 8
+	TYPE_DODGE = 9
+	TYPE_ABSORBED = 10
+	TYPE_WEAPON = 11
+	TYPE_ENEMY = 12
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
@@ -533,6 +618,11 @@ class Change(models.Model):
 		(TYPE_ITEM, "Item"),
 		(TYPE_HEALTH, "Health"),
 		(TYPE_NO_ACTIONS, "Insufficient Actions"),
+		(TYPE_OUTCOME, "Outcome"),
+		(TYPE_DODGE, "Dodge"),
+		(TYPE_ABSORBED, "Absorbed"),
+		(TYPE_WEAPON, "Weapon Used"),
+		(TYPE_ENEMY, "Enemy"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()

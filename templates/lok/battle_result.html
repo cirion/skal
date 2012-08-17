@@ -1,0 +1,37 @@
+{% if result %}
+{% if changes %}
+<h1>{{changes.0.name}}</h1>
+{% endif %}
+	{% if changes %}
+{# I would love to replace this with more flavorful text. Maybe semi-randomize it. A few sentences of prose describing HOW you won. #}
+<p>You {% if changes.0.name == "Victory!" %}defeated{%else%}lost to{%endif%} {{ changes.1.name }} using your {{ changes.2.name }}.</p>
+<ul>
+		{% for change in changes %}
+			{% if change.type == 9 %}
+	<li>You successfully dodged all the blows of your enemy and avoided coming to harm.</li>
+			{% endif %}
+			{% if change.type == 10 %}
+	<li>Your armor absorbed {{change.value}} points of damage.</li>
+			{% endif %}
+			{% if change.type == 2 %}
+	<li>{{change.name}} has increased to level {{change.new}}!</li>
+			{% elif change.type == 3 %}
+	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
+			{% elif change.type == 5 and change.old == 0 %}
+	<li>You now have {{change.new}} {{change.name}}.</li>
+			{% elif change.type == 5 %}
+	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
+			{% elif change.type == 1 %}
+	<li>{{change.name}} has increased by {{change.amount}} points.</li>
+			{% elif change.type == 6 and change.amount < 0 %}
+	<li>Your health has dropped from {{change.old}} to {{change.new}}.</li>
+			{% elif change.type == 6 %}
+	<li>Your health has increased from {{change.old}} to {{change.new}}.</li>
+			{% endif %}
+		{% endfor %}
+</ul>
+	{% endif %}
+<a href="/lok/story/"><p>Huzzah!</p></a>
+{% else %}
+<p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
+{% endif %}

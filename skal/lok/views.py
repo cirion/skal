@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -90,16 +90,49 @@ def check_auth(request):
 		return render_to_response('lok/login.html', {'failure': True})
 
 @login_required
+def battle(request, battle_id):
+	battle = Battle.objects.get(pk=battle_id)
+	current_character = Character.objects.get(player=request.user.id)
+	odds_result = current_character.odds_against(battle)
+	odds = odds_result['odds']
+	weapon = odds_result['weapon']
+	choice = Choice.objects.get(scenario=battle)
+	successes = Result.objects.filter(choice=choice.pk, type=Result.SUCCESS)
+	failures = Result.objects.filter(choice=choice.pk, type=Result.FAILURE)
+	success = False
+	results = failures
+	# First, check to see if they succeeded or not.
+    	if random.random() < odds:
+		success = True
+		results = successes
+	if len(results) == 1:
+		result = results[0]
+	elif len(results) > 1:
+		result = results[weighted_choice(results)]
+	changes = current_character.update_with_result(result,None, battle, success)
+	outcome_change = Change(type=Change.TYPE_OUTCOME)
+	if success:
+		outcome_change.name = "Victory!"
+	else:
+		outcome_change.name = "Defeat!"
+	changes.insert(0,Change(type=Change.TYPE_WEAPON,name=weapon))
+	changes.insert(0,Change(type=Change.TYPE_ENEMY,name=battle.title))
+	changes.insert(0,outcome_change)
+	response = HttpResponseRedirect(reverse('lok.views.battle_result', args=(result.id,)))
+	request.session['changes'] = changes
+	return response
+
+@login_required
 def scenario(request, scenario_id):
-		scenario = Scenario.objects.get(pk=scenario_id)
-		current_character = Character.objects.get(player=request.user.id)
-	#try:
+	scenario = Scenario.objects.get(pk=scenario_id)
+	current_character = Character.objects.get(player=request.user.id)
+	try:
 		battle = scenario.battle
 		result = current_character.odds_against(battle)
 		odds = result['odds']
 		weapon = result['weapon']
 		return render_to_response('lok/battle.html', {'battle': battle, 'choice': Choice.objects.get(scenario=scenario_id), 'odds': int(odds * 100), 'weapon': weapon}, context_instance=RequestContext(request))
-	#except Exception:
+	except Exception:
 		choices = list(Choice.objects.filter(scenario=scenario_id))
 		final_choices = list()
 		for choice in choices:
@@ -120,6 +153,12 @@ def result(request, result_id):
 	# Storing changes in the session so we can report on what happened after we're redirected from the POST. This basically lets us (a) protect against multiple submissions, and (b) give useful feedback even if the page load was interrupted. In a production environment, we'd need to more carefully monitor what data we're keeping in session and clear it out after they move on to another page.
 	changes = request.session.get('changes')
 	return render_to_response('lok/result.html', {'result': result, 'changes': changes})
+
+@login_required
+def battle_result(request, result_id):
+	result = Result.objects.get(pk=result_id)
+	changes = request.session.get('changes')
+	return render_to_response('lok/battle_result.html', {'result': result, 'changes': changes})
 
 @login_required
 def equip(request, fieldname, equip_id):
@@ -159,7 +198,7 @@ def choice(request, choice_id):
 	elif len(results) > 1:
 		result = results[weighted_choice(results)]
 	response = HttpResponseRedirect(reverse('lok.views.result', args=(result.id,)))
-	changes = current_character.update_with_result(result,stat_pre_reqs)
+	changes = current_character.update_with_result(result,stat_pre_reqs,False,False)
 	request.session['changes'] = changes
 	return response
 

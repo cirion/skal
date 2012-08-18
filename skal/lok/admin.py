@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -65,6 +65,14 @@ class ItemOutcomeInline(admin.TabularInline):
 	model = ItemOutcome
 	extra = 1
 
+class SetLocationOutcomeInline(admin.TabularInline):
+	model = SetLocationOutcome
+	extra = 1
+
+class LearnLocationOutcomeInline(admin.TabularInline):
+	model = LearnLocationOutcome
+	extra = 1
+
 class ResultInline(LinkedInline):
 	model = Result
 
@@ -76,6 +84,20 @@ class ScenarioLevelPreReqInline(admin.TabularInline):
 	model = ScenarioLevelPreReq
 	extra = 1
 	max_num = 1
+
+class ScenarioLocationTypePreReqInline(admin.TabularInline):
+	model = ScenarioLocationTypePreReq
+	extra = 1
+	max_num = 1
+
+class ScenarioLocationPreReqInline(admin.TabularInline):
+	model = ScenarioLocationPreReq
+	extra = 1
+	max_num = 1
+
+class ScenarioLocationKnownPreReqInline(admin.TabularInline):
+	model = ScenarioLocationKnownPreReq
+	extra = 1
 
 class ChoicePlotPreReqInline(admin.TabularInline):
 	model = ChoicePlotPreReq
@@ -106,7 +128,7 @@ class ChoiceInline(enhanced_admin.EnhancedAdminMixin,LinkedInline):
 	model = Choice
 
 class ScenarioAdmin(admin.ModelAdmin):
-	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ScenarioLevelPreReqInline]
+	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ScenarioLevelPreReqInline, ScenarioLocationKnownPreReqInline, ScenarioLocationPreReqInline, ScenarioLocationTypePreReqInline]
 	#list_display = ('link_to_choice',)
 	search_fields = ['title', 'description']
 
@@ -117,9 +139,11 @@ class ChoiceAdmin(admin.ModelAdmin):
 
 class ResultAdmin(admin.ModelAdmin):
 	model = Result
-	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline, HealthOutcomeInline]
+	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline, HealthOutcomeInline, SetLocationOutcomeInline, LearnLocationOutcomeInline]
 	search_fields = ['title', 'description']
 
+class CharacterLocationAvailableInline(admin.TabularInline):
+	model = CharacterLocationAvailable
 
 class CharacterStatInline(admin.TabularInline):
 	model = CharacterStat
@@ -132,7 +156,7 @@ class CharacterItemInline(admin.TabularInline):
 
 class CharacterAdmin(admin.ModelAdmin):
 	model = Character
-	inlines = [CharacterStatInline, CharacterPlotInline, CharacterItemInline]
+	inlines = [CharacterStatInline, CharacterPlotInline, CharacterItemInline, CharacterLocationAvailableInline]
 
 class StatAdmin(admin.ModelAdmin):
 	model = Stat
@@ -151,6 +175,24 @@ class EquipmentAdmin(admin.ModelAdmin):
 class PlotAdmin(admin.ModelAdmin):
 	model = Plot
 
+class LocationAdmin(admin.ModelAdmin):
+	model = Location
+
+class LocationRouteAdmin(admin.ModelAdmin):
+	model = LocationRoute
+
+class RouteOptionAdmin(admin.ModelAdmin):
+	model = RouteOption
+
+class RouteItemFreeAdmin(admin.ModelAdmin):
+	model = RouteItemFree
+
+class RouteItemCostAdmin(admin.ModelAdmin):
+	model = RouteItemCost
+
+class RouteTollAdmin(admin.ModelAdmin):
+	model = RouteToll
+
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
@@ -160,3 +202,9 @@ admin.site.register(Plot, PlotAdmin)
 admin.site.register(Item, ItemAdmin)
 admin.site.register(Equipment, EquipmentAdmin)
 admin.site.register(Battle, ScenarioAdmin)
+admin.site.register(LocationRoute, LocationRouteAdmin)
+admin.site.register(Location, LocationAdmin)
+admin.site.register(RouteOption, RouteOptionAdmin)
+admin.site.register(RouteItemFree, RouteItemFreeAdmin)
+admin.site.register(RouteItemCost, RouteItemCostAdmin)
+admin.site.register(RouteToll, RouteTollAdmin)

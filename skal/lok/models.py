@@ -185,6 +185,41 @@ class EquipmentStat(models.Model):
 	amount = models.IntegerField()
 	def __unicode__(self):
 		return str(self.amount) + " points of " + self.stat.name + " for " + self.equipment.name
+
+class Location(models.Model):
+	TYPE_CITY = 1
+	TYPE_COUNTRY = 2
+	TYPE_CAVE = 3
+	TYPE_NONE = 4
+	TYPE_CHOICES = (
+		(TYPE_CITY, "City"),
+		(TYPE_COUNTRY, "Country"),
+		(TYPE_CAVE, "Cave"),
+		(TYPE_NONE, "None"),
+	)
+	name = models.CharField(max_length=100, unique=True)
+	type = models.IntegerField(choices=TYPE_CHOICES)
+	def __unicode__(self):
+		return self.name
+
+class ScenarioLocationPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	location = models.ForeignKey(Location)
+	def __unicode__(self):
+		return self.location.name
+
+class ScenarioLocationTypePreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	type = models.IntegerField(choices=Location.TYPE_CHOICES)
+	def __unicode__(self):
+		return Location.TYPE_CHOICES[type-1]
+
+class ScenarioLocationKnownPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	location = models.ForeignKey(Location)
+	known = models.BooleanField()
+	def __unicode__(self):
+		return self.location.name + " " + str(self.known)
 	
 class ScenarioStatPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
@@ -273,6 +308,16 @@ class Result(models.Model):
 	def __unicode__(self):
 		return self.title
 
+class SetLocationOutcome(models.Model):
+	location = models.ForeignKey(Location)
+	def __unicode__(self):
+		return self.location.name
+
+class LearnLocationOutcome(models.Model):
+	location = models.ForeignKey(Location)
+	def __unicode__(self):
+		return self.location.name
+
 class MoneyOutcome(models.Model):
 	choice = models.ForeignKey(Result)
 	amount = models.IntegerField()
@@ -314,6 +359,35 @@ def get_stat_bonus(item, stat):
 		bonus += estat.amount
 	return bonus
 
+	
+class LocationRoute(models.Model):
+	origin = models.ForeignKey(Location, related_name='+')
+	destination = models.ForeignKey(Location, related_name='+')
+	def __unicode__(self):
+		return self.origin.name + " -> " + destination.origin.name
+
+class RouteOption(models.Model):
+	route = models.ForeignKey(LocationRoute)
+	description = models.CharField(max_length=1000)
+	def __unicode__(self):
+		return self.route.__unicode__()
+
+class RouteItemFree(RouteOption):
+	item = models.ForeignKey(Item)
+	def __unicode__(self):
+		return self.route.__unicode__() + " : " + self.item.name
+
+class RouteItemCost(RouteOption):
+	item = models.ForeignKey(Item)
+	amount = models.IntegerField()
+	def __unicode__(self):
+		return self.route.__unicode__() + " : " + self.amount + " " + self.item.name
+
+class RouteToll(models.Model):
+	amount = models.IntegerField()
+	def __unicode__(self):
+		return self.route.__unicode__() + " : " + self.amount + " royals"
+
 class Character(models.Model):
 	MAX_ACTIONS = 20
 	#ACTION_RECHARGE_TIME_SECS = 900
@@ -327,6 +401,7 @@ class Character(models.Model):
 	total_choices = models.IntegerField(default=0)
 	actions = models.IntegerField(default=20)
 	refill_time = models.DateTimeField()
+	location = models.ForeignKey(Location)
 	sword = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_SWORD}, null=True, blank=True, related_name='+')
 	bashing = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_BASHING}, null=True, blank=True, related_name='+')
 	bow = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_BOW}, null=True, blank=True, related_name='+')
@@ -573,6 +648,12 @@ class Character(models.Model):
 		self.total_choices = self.total_choices + 1
 		self.save()
 		return changes
+
+class CharacterLocationAvailable(models.Model):
+	character = models.ForeignKey(Character)
+	location = models.ForeignKey(Location)
+	def __unicode__(self):
+		return self.location.name
 
 class CharacterStat(models.Model):
 	character = models.ForeignKey(Character)

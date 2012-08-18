@@ -74,7 +74,7 @@ def story(request):
 		scenario = scenarios.pop(0)
 		if (scenario.valid_for(current_character)):
 			out_scenarios.append(scenario)
-	return render_to_response('lok/story.html', {'scenarios': out_scenarios, 'actions': current_character.actions})
+	return render_to_response('lok/story.html', {'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
 
 def check_auth(request):
 	username = request.POST['username']

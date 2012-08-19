@@ -212,7 +212,7 @@ class ScenarioLocationTypePreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
 	type = models.IntegerField(choices=Location.TYPE_CHOICES)
 	def __unicode__(self):
-		return Location.TYPE_CHOICES[type-1]
+		return Location.TYPE_CHOICES[self.type-1][1]
 
 class ScenarioLocationKnownPreReq(models.Model):
 	scenario = models.ForeignKey(Scenario)
@@ -659,6 +659,21 @@ class Character(models.Model):
 			plot.save()
 			changes.append(change)
 
+		location_learn_outcomes = LearnLocationOutcome.objects.filter(choice = result.pk)
+		for outcome in location_learn_outcomes:
+			change = Change(type = Change.TYPE_LOCATION_LEARNED)
+			change.name = outcome.location.name
+			location, created = CharacterLocationAvailable.objects.get_or_create(character = self, location = outcome.location)
+			location.save()
+			changes.append(change)
+
+		if SetLocationOutcome.objects.filter(choice=result.pk):
+			outcome = SetLocationOutcome.objects.get(choice=result.pk)
+			change = Change(type = Change.TYPE_LOCATION_CHANGED)
+			change.name = outcome.location.name
+			self.location = outcome.location
+			changes.append(change)
+
 		self.total_choices = self.total_choices + 1
 		self.save()
 		return changes
@@ -705,6 +720,8 @@ class Change(models.Model):
 	TYPE_ABSORBED = 10
 	TYPE_WEAPON = 11
 	TYPE_ENEMY = 12
+	TYPE_LOCATION_LEARNED = 13
+	TYPE_LOCATION_CHANGED = 14
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
@@ -718,6 +735,8 @@ class Change(models.Model):
 		(TYPE_ABSORBED, "Absorbed"),
 		(TYPE_WEAPON, "Weapon Used"),
 		(TYPE_ENEMY, "Enemy"),
+		(TYPE_LOCATION_LEARNED, "Learned Location"),
+		(TYPE_LOCATION_CHANGED, "Moved To Location"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()

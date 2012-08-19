@@ -19,6 +19,12 @@
 			{% elif change.type == 6 %}
 	<li>Your health has increased from {{change.old}} to {{change.new}}.</li>
 			{% endif %}
+			{% if change.type == 13 %}
+	<li>You have learned the way to {{change.name}} and can travel here in the future.</li>
+			{% endif %}
+			{% if change.type == 14 %}
+	<li>You are now in {{change.name}}.</li>
+			{% endif %}
 		{% endfor %}
 </ul>
 	{% endif %}

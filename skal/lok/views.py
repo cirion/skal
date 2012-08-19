@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -74,7 +74,47 @@ def story(request):
 		scenario = scenarios.pop(0)
 		if (scenario.valid_for(current_character)):
 			out_scenarios.append(scenario)
-	return render_to_response('lok/story.html', {'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
+	routes = get_routes(current_character)
+	return render_to_response('lok/story.html', {'routes': routes, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
+
+def get_routes(current_character):
+	routes = list(LocationRoute.objects.filter(origin = current_character.location))
+	approved_routes = list()
+	for route in routes:
+		print "Looking at " + route.__unicode__()
+		route_found = False
+		if CharacterLocationAvailable.objects.filter(character=current_character,location=route.destination):
+				if RouteFree.objects.filter(route=route):
+					approved_routes.append(RouteFree.objects.get(route=route))
+					route_found = True
+				else:
+					print "Not free."
+					if (RouteItemFree.objects.filter(route=route)):
+						item = RouteItemFree.objects.get(route=route)
+						print "Found item " + item.item.name
+						if CharacterItem.objects.filter(character=current_character,item=item.item):
+							approved_routes.append(RouteItemFree.objects.get(route=route))
+							route_found = True
+				if not route_found:
+					# If there wasn't a free option, list any available pay options.
+					if RouteToll.objects.filter(route=route):
+						if (RouteToll.objects.get(route=route).amount <= current_character.money):
+							approved_routes.append(RouteToll.objects.get(route=route))
+					for cost in RouteItemCost.objects.filter(route=route):
+							item = cost.item
+							amount = cost.amount
+							try:
+								if CharacterItem.objects.get(character=current_character,item=item).quantity >= amount:
+									approved_routes.append(cost)
+							except Exception:
+								pass
+	return approved_routes
+
+@login_required
+def travel(request):
+	current_character = Character.objects.get(player=request.user.id)
+	approved_routes = get_routes(current_character)
+	return render_to_response('lok/travel.html', {'character': current_character, 'routes': approved_routes}, context_instance=RequestContext(request))
 
 def check_auth(request):
 	username = request.POST['username']
@@ -171,6 +211,27 @@ def equip(request, fieldname, equip_id):
 	current_character.save()
 	return HttpResponseRedirect('/lok/character/')
 
+@login_required
+def travel_to(request, route_id):
+	current_character = Character.objects.get(player=request.user.id)
+	route = RouteOption.objects.get(pk=route_id)
+	# If this route costs money, take it now.
+	try:
+		current_character.money -= route.routetoll.amount
+	except Exception:
+		pass
+	try:
+		item = route.routeitemcost.item
+		charitem = CharacterItem.objects.get(character=current_character, item=item)
+		charitem.quantity -= route.routeitemcost.amount
+		charitem.save()
+	except Exception:
+		pass
+	# Either they've paid, or it's free. Either way, we're done!
+	current_character.location = route.route.destination
+	current_character.save()
+	return HttpResponseRedirect('/lok/story/')
+		
 @login_required
 def choice(request, choice_id):
 	current_character = Character.objects.get(player=request.user.id)

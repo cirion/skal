@@ -1,0 +1,14 @@
+<html>
+<body>
+{% if not routes %}
+<p>No exit from this location is available at this time. Don't worry, though! Continue with your story, and a solution will present itself.</p>
+{% else %}
+<p>Please choose one of the following travel options.</p>
+<ul>
+	{% for route in routes %}
+<li>Travel to <a href="/lok/travel/{{route.id}}/">{{route.route.destination.name}}</a>: {{route.summary}}</li>
+	{% endfor %}
+</ul>
+{% endif %}
+</body>
+</html>

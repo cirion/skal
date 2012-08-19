@@ -309,11 +309,13 @@ class Result(models.Model):
 		return self.title
 
 class SetLocationOutcome(models.Model):
+	choice = models.ForeignKey(Result)
 	location = models.ForeignKey(Location)
 	def __unicode__(self):
 		return self.location.name
 
 class LearnLocationOutcome(models.Model):
+	choice = models.ForeignKey(Result)
 	location = models.ForeignKey(Location)
 	def __unicode__(self):
 		return self.location.name
@@ -364,11 +366,17 @@ class LocationRoute(models.Model):
 	origin = models.ForeignKey(Location, related_name='+')
 	destination = models.ForeignKey(Location, related_name='+')
 	def __unicode__(self):
-		return self.origin.name + " -> " + destination.origin.name
+		return self.origin.name + " -> " + self.destination.name
 
 class RouteOption(models.Model):
 	route = models.ForeignKey(LocationRoute)
 	description = models.CharField(max_length=1000)
+	def __unicode__(self):
+		return self.route.__unicode__()
+	def summary(self):
+		return self.description
+
+class RouteFree(RouteOption):
 	def __unicode__(self):
 		return self.route.__unicode__()
 
@@ -376,17 +384,23 @@ class RouteItemFree(RouteOption):
 	item = models.ForeignKey(Item)
 	def __unicode__(self):
 		return self.route.__unicode__() + " : " + self.item.name
+	def summary(self):
+		return self.description + " This uses your " + self.item.name + "."
 
 class RouteItemCost(RouteOption):
 	item = models.ForeignKey(Item)
 	amount = models.IntegerField()
 	def __unicode__(self):
-		return self.route.__unicode__() + " : " + self.amount + " " + self.item.name
+		return self.route.__unicode__() + " : " + str(self.amount) + " " + self.item.name
+	def summary(self):
+		return self.description + " This requires using " + str(self.amount) + " " + self.item.name + "s."
 
-class RouteToll(models.Model):
+class RouteToll(RouteOption):
 	amount = models.IntegerField()
 	def __unicode__(self):
-		return self.route.__unicode__() + " : " + self.amount + " royals"
+		return self.route.__unicode__() + " : " + str(self.amount) + " royals"
+	def summary(self):
+		return self.description + " The fee is " + str(self.amount) + " royals."
 
 class Character(models.Model):
 	MAX_ACTIONS = 20

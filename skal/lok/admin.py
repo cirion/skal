@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -181,7 +181,10 @@ class LocationAdmin(admin.ModelAdmin):
 class LocationRouteAdmin(admin.ModelAdmin):
 	model = LocationRoute
 
-class RouteOptionAdmin(admin.ModelAdmin):
+class RouteFreeAdmin(admin.ModelAdmin):
+	model = RouteFree
+
+class RouteChoiceAdmin(admin.ModelAdmin):
 	model = RouteOption
 
 class RouteItemFreeAdmin(admin.ModelAdmin):
@@ -204,7 +207,7 @@ admin.site.register(Equipment, EquipmentAdmin)
 admin.site.register(Battle, ScenarioAdmin)
 admin.site.register(LocationRoute, LocationRouteAdmin)
 admin.site.register(Location, LocationAdmin)
-admin.site.register(RouteOption, RouteOptionAdmin)
 admin.site.register(RouteItemFree, RouteItemFreeAdmin)
 admin.site.register(RouteItemCost, RouteItemCostAdmin)
 admin.site.register(RouteToll, RouteTollAdmin)
+admin.site.register(RouteFree, RouteFreeAdmin)

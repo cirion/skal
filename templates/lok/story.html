@@ -2,6 +2,9 @@
 <body>
 <p>Greetings, {{character.name}}. You are in {{character.location.name}}.</p>
 <p>You have {{actions}} blank pages available to write your story.</p>
+{% if routes %}
+<p>You can <a href="/lok/travel/">travel</a> from this place.</p>
+{% endif %}
 {% if scenarios %}
 	{% for scenario in scenarios %}
 	<h1><a href="/lok/scenario/{{scenario.id}}">{{scenario.title }}</a></h1>

@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -52,6 +52,10 @@ class HealthOutcomeInline(admin.TabularInline):
 	model = HealthOutcome
 	extra = 1
 	max_num = 1
+
+class ItemLocationInline(admin.TabularInline):
+	model = ItemLocation
+	extra = 1
 
 class StatOutcomeInline(admin.TabularInline):
 	model = StatOutcome
@@ -162,6 +166,7 @@ class StatAdmin(admin.ModelAdmin):
 	model = Stat
 
 class ItemAdmin(admin.ModelAdmin):
+	inlines = [ItemLocationInline]
 	model = Item
 
 class EquipmentStatInline(admin.TabularInline):
@@ -171,11 +176,17 @@ class EquipmentStatInline(admin.TabularInline):
 class EquipmentAdmin(admin.ModelAdmin):
 	model = Equipment
 	inlines = [EquipmentStatInline]
+	def add_view(self, request, form_url="", extra_context=None):
+        	data = request.GET.copy()
+        	data['multiple'] = False
+        	request.GET = data
+        	return super(EquipmentAdmin, self).add_view(request, form_url="", extra_context=extra_context)
 
 class PlotAdmin(admin.ModelAdmin):
 	model = Plot
 
 class LocationAdmin(admin.ModelAdmin):
+	inlines = [ItemLocationInline]
 	model = Location
 
 class LocationRouteAdmin(admin.ModelAdmin):

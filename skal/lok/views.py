@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -83,6 +83,31 @@ def story(request):
 	#	scenario = scenarios.pop(0)
 	routes = get_routes(current_character)
 	return render_to_response('lok/story.html', {'routes': routes, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
+
+#class ItemInfo(model.Models):
+#	item = model.ForeignKey(Item)
+#	price = model.IntegerField()
+#	quantity = model.IntegerField(default=1)
+#	stats = 
+
+@login_required
+def market(request):
+	current_character = Character.objects.get(player=request.user.id)
+	sellable_items = CharacterItem.objects.filter(character=current_character, item__sellable=True, quantity__gt = 0)
+	sale_items = list()
+	for item in sellable_items:
+		sale_items.append({'name': item.item.name, 'price': item.item.value / 2, 'quantity': item.quantity, 'stats': EquipmentStat.objects.filter(equipment=item.item)})
+	items_check = ItemLocation.objects.filter(location=current_character.location)
+	buyable_items = list()
+	for item in items_check:
+		if item.item.multiple or (not CharacterItem.objects.filter(character=current_character, item = item.item)) or (CharacterItem.objects.get(character=current_character, item = item.item).quantity == 0):
+		#if not CharacterItem.objects.filter(character=current_character, item = item.item) or CharacterItem.objects.get(character=current_character
+#			buyable_items.append(item)
+			details = ({'name': item.item.name, 'id': item.item.pk, 'price': item.item.value, 'stats': EquipmentStat.objects.filter(equipment=item.item)})
+			if (CharacterItem.objects.filter(character=current_character, item=item.item)):
+				details['quantity'] = CharacterItem.objects.get(character=current_character, item=item.item).quantity
+			buyable_items.append(details)
+	return render_to_response('lok/market.html', {'sellable_items': sale_items, 'buyable_items': buyable_items }, context_instance=RequestContext(request))
 
 def get_routes(current_character):
 	routes = list(LocationRoute.objects.filter(origin = current_character.location))
@@ -326,3 +351,4 @@ def random_weighted_sample_no_replacement(items, random, n):
     heap = rws_heap(items)              # just make a heap...
     for i in range(n):
         yield rws_heap_pop(heap, random)        # and pop n items off it.
+

@@ -1,0 +1,50 @@
+<html>
+<head>
+<title>Market</title>
+<body>
+{% if not sellable_items and not buyable_items %}
+<p>No items are currently available to buy or to sell. Please try back later.</p>
+{% endif %}
+{% if buyable_items %}
+<p>Would you like to buy any of these?<p>
+<ul>
+{% for item in buyable_items %}
+<li>{{item.name}}: {{item.price}} royals. 
+{% if item.quantity > 0 %}
+(You have {{item.quantity}})
+{% endif %}
+{% for stat in item.stats %}
+(+{{stat.amount}} {{stat.stat.name}})
+{% endfor %}
+<form method="post" action="/lok/buy/{{item.id}}/1/">
+{% csrf_token %}
+	<input type="submit" value="Buy one"/> 
+</form>
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% if sellable_items %}
+<p>Would you like to sell any of these?</p>
+<ul>
+{% for item in sellable_items %}
+<li>{{item.name}}: {{item.price}} royals. (You have {{item.quantity}})
+{% for stat in item.stats %}
+(+{{stat.amount}} {{stat.stat.name}})
+{% endfor %}
+<form method="post" action="/lok/sell/{{item.id}}/1/">
+{% csrf_token %}
+	<input type="submit" value="Sell one"/> 
+</form>
+{% if item.quantity > 1 %}
+<form method="post" action="/lok/sell/{{item.id}}/all/">
+{% csrf_token %}
+	<input type="submit" value="Sell all"/> 
+</form>
+{% endif %}
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+</body>
+</html>

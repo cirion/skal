@@ -154,6 +154,7 @@ class Item(models.Model):
 	name = models.CharField(max_length=100)
 	value = models.IntegerField(default=1)
 	sellable = models.BooleanField(default=True)
+	multiple = models.BooleanField(default=True)
 	def __unicode__(self):
 		return self.name
 
@@ -180,6 +181,14 @@ class Equipment(Item):
 		(TYPE_NECK, "Neck"),
 		(TYPE_ARMOR, "Armor")
 	)
+	def __init__(self, *args, **kwargs):
+		print "In overloaded constructor"
+    		if 'multiple' not in kwargs:
+			print "Was not defined"
+        		kwargs['multiple'] = False
+		else:
+			print "Was defined"
+    		super(Item, self).__init__(*args, **kwargs)
 	type = models.IntegerField(choices=TYPE_CHOICES)
 	def __unicode__(self):
 		return self.name
@@ -766,3 +775,9 @@ class Change(models.Model):
 	name = models.CharField(max_length=100)
 	def __unicode__(self):
 		return self.name + " has changed from " + self.old + " to " + self.new + "."
+
+class ItemLocation(models.Model):
+	item = models.ForeignKey(Item)
+	location = models.ForeignKey(Location)
+	def __unicode__(self):
+		return self.item.name + " in " + self.location.name

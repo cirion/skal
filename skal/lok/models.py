@@ -28,6 +28,17 @@ def valid_for_plot_pre_reqs(character, pre_reqs):
 			return False
 	return True
 
+def valid_for_location_known_pre_reqs(character, pre_reqs):
+	if pre_reqs:
+		try:
+			for pre_req in pre_reqs:
+				if (CharacterLocationAvailable.objects.get(character=character.pk, location=pre_req.location) and not pre_req.known):
+					return False
+		except CharacterLocationAvailable.DoesNotExist:
+			if pre_req.known:
+				return False
+	return True
+
 def valid_for_stat_pre_reqs(character, pre_reqs, enforceMax):
 	if pre_reqs:
 		try:
@@ -65,6 +76,7 @@ class Scenario(models.Model):
 	title = models.CharField(max_length=100)
 	image = models.ImageField(blank=True,null=True,upload_to="/home/chris/django/skal/pics")
 	description = models.TextField(max_length=2000)
+	weight = models.IntegerField(default=10000)
 	TYPE_QUEST = 1
 	TYPE_ENCOUNTER = 2
 	TYPE_CHOICES = (
@@ -86,6 +98,15 @@ class Scenario(models.Model):
 			return False
 		pre_reqs = ScenarioLevelPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_level_pre_reqs(character,pre_reqs):
+			return False
+		if ScenarioLocationPreReq.objects.filter(scenario=self.pk) and ScenarioLocationPreReq.objects.get(scenario=self.pk).location != character.location:
+			return False
+		if ScenarioLocationTypePreReq.objects.filter(scenario=self.pk):
+			print "Compare " + str(ScenarioLocationTypePreReq.objects.get(scenario=self.pk).type) + " to " + str(character.location.type)
+			if ScenarioLocationTypePreReq.objects.get(scenario=self.pk).type != character.location.type:
+				return False
+		pre_reqs = ScenarioLocationKnownPreReq.objects.filter(scenario=self.pk)
+		if not valid_for_location_known_pre_reqs(character, pre_reqs):
 			return False
 		return True
 

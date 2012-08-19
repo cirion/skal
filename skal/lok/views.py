@@ -65,15 +65,22 @@ def story(request):
 	current_character = Character.objects.get(player=request.user.id)
 	current_character.update_actions()
 	scenarios = list(Scenario.objects.all())
+
+	max_scenarios = 5
+	out_scenarios = list()
 	pseudo = Random()
 	pseudo.seed(current_character.total_choices)
-	pseudo.shuffle(scenarios)
-	max_scenarios = 50
-	out_scenarios = list()
-	while (len(out_scenarios) < max_scenarios and scenarios):
-		scenario = scenarios.pop(0)
+	for scenario in random_weighted_sample_no_replacement(scenarios, pseudo, len(scenarios)):
 		if (scenario.valid_for(current_character)):
 			out_scenarios.append(scenario)
+		if len(out_scenarios) >= max_scenarios:
+			break
+
+	"""
+	pseudo.shuffle(scenarios)"""
+
+	#while (len(out_scenarios) < max_scenarios and scenarios):
+	#	scenario = scenarios.pop(0)
 	routes = get_routes(current_character)
 	return render_to_response('lok/story.html', {'routes': routes, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
 
@@ -273,3 +280,49 @@ def weighted_choice(weights):
 
     rnd = random.random() * running_total
     return bisect.bisect_right(totals, rnd)
+
+# Thanks to http://stackoverflow.com/questions/2140787/select-random-k-elements-from-a-list-whose-elements-have-weights?lq=1 for this code!
+class Node:
+    # Each node in the heap has a weight, value, and total weight.
+    # The total weight, self.tw, is self.w plus the weight of any children.
+    __slots__ = ['w', 'v', 'tw']
+    def __init__(self, w, v, tw):
+        self.w, self.v, self.tw = w, v, tw
+
+def rws_heap(items):
+    # h is the heap. It's like a binary tree that lives in an array.
+    # It has a Node for each pair in `items`. h[1] is the root. Each
+    # other Node h[i] has a parent at h[i>>1]. Each node has up to 2
+    # children, h[i<<1] and h[(i<<1)+1].  To get this nice simple
+    # arithmetic, we have to leave h[0] vacant.
+    h = [None]                          # leave h[0] vacant
+    #for w, v in items:
+    for item in items:
+        h.append(Node(item.weight, item, item.weight))
+    for i in range(len(h) - 1, 1, -1):  # total up the tws
+        h[i>>1].tw += h[i].tw           # add h[i]'s total to its parent
+    return h
+
+def rws_heap_pop(h, random):
+    gas = h[1].tw * random.random()     # start with a random amount of gas
+
+    i = 1                     # start driving at the root
+    while gas > h[i].w:       # while we have enough gas to get past node i:
+        gas -= h[i].w         #   drive past node i
+        i <<= 1               #   move to first child
+        if gas > h[i].tw:     #   if we have enough gas:
+            gas -= h[i].tw    #     drive past first child and descendants
+            i += 1            #     move to second child
+    w = h[i].w                # out of gas! h[i] is the selected node.
+    v = h[i].v
+
+    h[i].w = 0                # make sure this node isn't chosen again
+    while i:                  # fix up total weights
+        h[i].tw -= w
+        i >>= 1
+    return v
+
+def random_weighted_sample_no_replacement(items, random, n):
+    heap = rws_heap(items)              # just make a heap...
+    for i in range(n):
+        yield rws_heap_pop(heap, random)        # and pop n items off it.

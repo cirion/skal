@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -96,7 +96,7 @@ def market(request):
 	sellable_items = CharacterItem.objects.filter(character=current_character, item__sellable=True, quantity__gt = 0)
 	sale_items = list()
 	for item in sellable_items:
-		sale_items.append({'name': item.item.name, 'price': item.item.value / 2, 'quantity': item.quantity, 'stats': EquipmentStat.objects.filter(equipment=item.item)})
+		sale_items.append({'id': item.item.id, 'name': item.item.name, 'price': item.item.value / 2, 'quantity': item.quantity, 'stats': EquipmentStat.objects.filter(equipment=item.item)})
 	items_check = ItemLocation.objects.filter(location=current_character.location)
 	buyable_items = list()
 	for item in items_check:
@@ -107,7 +107,7 @@ def market(request):
 			if (CharacterItem.objects.filter(character=current_character, item=item.item)):
 				details['quantity'] = CharacterItem.objects.get(character=current_character, item=item.item).quantity
 			buyable_items.append(details)
-	return render_to_response('lok/market.html', {'sellable_items': sale_items, 'buyable_items': buyable_items }, context_instance=RequestContext(request))
+	return render_to_response('lok/market.html', {'royals': current_character.money, 'sellable_items': sale_items, 'buyable_items': buyable_items }, context_instance=RequestContext(request))
 
 def get_routes(current_character):
 	routes = list(LocationRoute.objects.filter(origin = current_character.location))
@@ -231,6 +231,38 @@ def battle_result(request, result_id):
 	result = Result.objects.get(pk=result_id)
 	changes = request.session.get('changes')
 	return render_to_response('lok/battle_result.html', {'result': result, 'changes': changes})
+
+@login_required
+def buy(request, item_id, quantity):
+	current_character = Character.objects.get(player=request.user.id)
+	item = Item.objects.get(pk=item_id)
+	cost = item.value * int(quantity)
+	if (cost > current_character.money):
+		return HttpResponseRedirect('/lok/market/')
+	item, created = CharacterItem.objects.get_or_create(character=current_character, item=item)
+	item.quantity = item.quantity + int(quantity)
+	item.save()
+	current_character.money -= cost
+	current_character.save()
+	return HttpResponseRedirect('/lok/market/')
+
+@login_required
+def sell(request, item_id, quantity):
+	current_character = Character.objects.get(player=request.user.id)
+	item = CharacterItem.objects.get(item__pk=item_id, character=current_character)
+	amount = 0
+	if (quantity == 'all'):
+		amount = item.quantity
+	else:
+		amount = int(quantity)
+	if amount > item.quantity:
+		return HttpResponseRedirect('/lok/market/')
+	earnings = (item.item.value / 2) * amount
+	current_character.money += earnings
+	item.quantity -= amount
+	current_character.save()
+	item.save()
+	return HttpResponseRedirect('/lok/market/')
 
 @login_required
 def equip(request, fieldname, equip_id):

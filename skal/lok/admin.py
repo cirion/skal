@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -80,6 +80,11 @@ class LearnLocationOutcomeInline(admin.TabularInline):
 class ResultInline(LinkedInline):
 	model = Result
 
+class ScenarioHealthPreReqInline(admin.TabularInline):
+	model = ScenarioHealthPreReq
+	extra = 1
+	max_num = 1
+
 class ChoiceStatPreReqInline(admin.TabularInline):
 	model = ChoiceStatPreReq
 	extra = 1
@@ -132,7 +137,7 @@ class ChoiceInline(enhanced_admin.EnhancedAdminMixin,LinkedInline):
 	model = Choice
 
 class ScenarioAdmin(admin.ModelAdmin):
-	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ScenarioLevelPreReqInline, ScenarioLocationKnownPreReqInline, ScenarioLocationPreReqInline, ScenarioLocationTypePreReqInline]
+	inlines = [ChoiceInline,ScenarioStatPreReqInline,ScenarioItemPreReqInline,ScenarioPlotPreReqInline,ScenarioLevelPreReqInline, ScenarioLocationKnownPreReqInline, ScenarioLocationPreReqInline, ScenarioLocationTypePreReqInline, ScenarioHealthPreReqInline]
 	#list_display = ('link_to_choice',)
 	search_fields = ['title', 'description']
 

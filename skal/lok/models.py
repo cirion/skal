@@ -87,6 +87,9 @@ class Scenario(models.Model):
 	def __unicode__(self):
 		return self.title
 	def valid_for(self, character):
+		# Special case, for my own sanity/convenience: if you're in a special location, you only get the scenarios specific to that place.
+		if character.location.type == Location.TYPE_NONE and not ScenarioLocationPreReq.objects.filter(scenario=self.pk):
+			return False
 		pre_reqs = ScenarioStatPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_stat_pre_reqs(character,pre_reqs, True):
 			return False
@@ -108,6 +111,15 @@ class Scenario(models.Model):
 		pre_reqs = ScenarioLocationKnownPreReq.objects.filter(scenario=self.pk)
 		if not valid_for_location_known_pre_reqs(character, pre_reqs):
 			return False
+		if ScenarioHealthPreReq.objects.filter(scenario=self.pk):
+			health = ScenarioHealthPreReq.objects.get(scenario=self.pk)
+			print "Health? " + str(health.full)
+			if health.full and character.current_health < character.max_health():
+				print "Exit 1"
+				return False
+			elif not health.full and character.current_health == character.max_health():
+				print "Exit 2"
+				return False
 		return True
 
 class Battle(Scenario):
@@ -274,6 +286,12 @@ class ScenarioLevelPreReq(models.Model):
 	maximum = models.IntegerField(default=1000)
 	def __unicode__(self):
 		return "Level " + str(self.minimum) + "-" + str(self.maximum)
+
+class ScenarioHealthPreReq(models.Model):
+	scenario = models.ForeignKey(Scenario)
+	full = models.BooleanField(default=False)
+	def __unicode__(self):
+		return "Full health: " + str(self.full)
 
 class ChoicePlotPreReq(models.Model):
 	choice = models.ForeignKey(Choice)

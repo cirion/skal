@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
@@ -28,6 +28,10 @@ def create_character(request):
 		character.save()
 		return HttpResponseRedirect('/lok/story/')
 	return render_to_response('lok/create_character.html', {}, context_instance=RequestContext(request))
+
+@login_required
+def dead(request):
+	return render_to_response('lok/dead.html', {}, context_instance=RequestContext(request))
 
 @login_required
 def character(request):
@@ -63,6 +67,10 @@ def story(request):
 	if not Character.objects.filter(player=request.user.id):
 		return HttpResponseRedirect('/lok/create/')
 	current_character = Character.objects.get(player=request.user.id)
+	if current_character.current_health < 1 and not current_character.location.name == "Mercy Home":
+		current_character.location = Location.objects.get(name="Mercy Home")
+		current_character.save()
+		return HttpResponseRedirect('/lok/dead/')
 	current_character.update_actions()
 	scenarios = list(Scenario.objects.all())
 

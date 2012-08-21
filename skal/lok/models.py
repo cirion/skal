@@ -105,7 +105,6 @@ class Scenario(models.Model):
 		if ScenarioLocationPreReq.objects.filter(scenario=self.pk) and ScenarioLocationPreReq.objects.get(scenario=self.pk).location != character.location:
 			return False
 		if ScenarioLocationTypePreReq.objects.filter(scenario=self.pk):
-			print "Compare " + str(ScenarioLocationTypePreReq.objects.get(scenario=self.pk).type) + " to " + str(character.location.type)
 			if ScenarioLocationTypePreReq.objects.get(scenario=self.pk).type != character.location.type:
 				return False
 		pre_reqs = ScenarioLocationKnownPreReq.objects.filter(scenario=self.pk)
@@ -113,12 +112,9 @@ class Scenario(models.Model):
 			return False
 		if ScenarioHealthPreReq.objects.filter(scenario=self.pk):
 			health = ScenarioHealthPreReq.objects.get(scenario=self.pk)
-			print "Health? " + str(health.full)
 			if health.full and character.current_health < character.max_health():
-				print "Exit 1"
 				return False
 			elif not health.full and character.current_health == character.max_health():
-				print "Exit 2"
 				return False
 		return True
 
@@ -194,12 +190,8 @@ class Equipment(Item):
 		(TYPE_ARMOR, "Armor")
 	)
 	def __init__(self, *args, **kwargs):
-		print "In overloaded constructor"
     		if 'multiple' not in kwargs:
-			print "Was not defined"
         		kwargs['multiple'] = False
-		else:
-			print "Was defined"
     		super(Item, self).__init__(*args, **kwargs)
 	type = models.IntegerField(choices=TYPE_CHOICES)
 	def __unicode__(self):

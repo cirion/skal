@@ -25,6 +25,7 @@ def create_character(request):
 		character.player = request.user
 		character.money = 0
 		character.gender = request.POST['gender']
+		character.location = Location.objects.get(name="Your Childhood Home")
 		character.save()
 		return HttpResponseRedirect('/lok/story/')
 	return render_to_response('lok/create_character.html', {}, context_instance=RequestContext(request))
@@ -121,17 +122,14 @@ def get_routes(current_character):
 	routes = list(LocationRoute.objects.filter(origin = current_character.location))
 	approved_routes = list()
 	for route in routes:
-		print "Looking at " + route.__unicode__()
 		route_found = False
 		if CharacterLocationAvailable.objects.filter(character=current_character,location=route.destination):
 				if RouteFree.objects.filter(route=route):
 					approved_routes.append(RouteFree.objects.get(route=route))
 					route_found = True
 				else:
-					print "Not free."
 					if (RouteItemFree.objects.filter(route=route)):
 						item = RouteItemFree.objects.get(route=route)
-						print "Found item " + item.item.name
 						if CharacterItem.objects.filter(character=current_character,item=item.item):
 							approved_routes.append(RouteItemFree.objects.get(route=route))
 							route_found = True

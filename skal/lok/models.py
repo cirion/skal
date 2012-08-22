@@ -599,9 +599,12 @@ class Character(models.Model):
 		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
 		for outcome in money_outcomes:
 			change = Change(type = Change.TYPE_MONEY)
-			change.name = "Royals"
 			change.old = self.money
 			self.money += outcome.amount
+			if outcome.amount == 1:
+				change.name = "Royal"
+			else:
+				change.name = "Royals"
 			# If we hit this test, we probably accidentally made the result amount bigger than the choice amount.
 			if (self.money < 0):
 				self.money = 0

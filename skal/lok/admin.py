@@ -127,9 +127,11 @@ class ChoiceItemPreReqInline(admin.TabularInline):
 
 class ScenarioItemPreReqInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):
 	model = ScenarioItemPreReq
+	extra = 1
 
 class ScenarioPlotPreReqInline(admin.TabularInline):
 	model = ScenarioPlotPreReq
+	extra = 1
 
 #class ChoiceInline(enhanced_admin.EnhancedAdminMixin,admin.StackedInline):
 #class ChoiceInline(enhanced_admin.EnhancedAdminMixin,admin.TabularInline):

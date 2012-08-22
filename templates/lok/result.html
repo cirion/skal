@@ -10,6 +10,11 @@
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 and change.old == 0 %}
 	<li>You now have {{change.new}} {{change.name}}.</li>
+			{% elif change.type == 5  and change.amount < 0 and change.new == 0%}
+	<li>You lost your {{change.name}}.</li>
+			{% elif change.type == 5  and change.amount < 0 %}
+{# Using widthratio is a bizarre but approved way to do math in a django template. #}
+	<li>You lost {%widthratio -1 1 change.amount%} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 %}
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 1 %}

@@ -1,5 +1,6 @@
 <html>
 <body>
+{% autoescape off %}
 {% if not routes %}
 <p>No exit from this location is available at this time. Don't worry, though! Continue with your story, and a solution will present itself.</p>
 {% else %}
@@ -10,5 +11,6 @@
 	{% endfor %}
 </ul>
 {% endif %}
+{% endautoescape %}
 </body>
 </html>

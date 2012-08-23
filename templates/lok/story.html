@@ -1,18 +1,22 @@
 <html>
 <body>
+{% autoescape off %}
 <p>Greetings, <a href="/lok/character/">{{character.name}}</a>. You are in {{character.location.name}}.</p>
-<p>You have {{actions}} blank pages available to write your story.</p>
+<p>You have {{actions}} blank page{{actions|pluralize}} available to write your story.</p>
 {% if routes %}
 <p>You can <a href="/lok/travel/">travel</a> from this place.</p>
 {% endif %}
 <p>You can visit the <a href="/lok/market/">market</a> here.</p>
 {% if scenarios %}
 	{% for scenario in scenarios %}
-	<h1><a href="/lok/scenario/{{scenario.id}}">{{scenario.title }}</a></h1>
-	<p>{{scenario.description }}</p>
+	<h1><a href="/lok/scenario/{{scenario.id}}">{{scenario.title}}</a></h1>
+	<p>{{scenario.description}}</p>
 	{% endfor %}
+<p style="text-align:center">If you don't see anything here that interests you, you can <a href="/lok/rest/">rest</a> for the day and see if anything changes.</p>
+<p style="text-align:center">Have something to say? Please <a href="/lok/contact/">contact us</a>!</p>
 {% else %}
 	<p>Whoops! There should be some stories here for you. Sorry about that, please check back soon!</p>
 {% endif %}
+{% endautoescape %}
 </body>
 </html>

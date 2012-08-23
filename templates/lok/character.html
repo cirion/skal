@@ -1,5 +1,6 @@
 <html>
 <body>
+{% autoescape off %}
 <h1>
 {{title}} {{character.name}}
 </h1>
@@ -122,5 +123,6 @@
 {% endfor %}
 {% endif %}
 </ul>
+{% endautoescape %}
 </body>
 </html>

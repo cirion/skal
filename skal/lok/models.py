@@ -481,6 +481,15 @@ class Character(models.Model):
 		bonus += get_stat_bonus(self.neck, stat)
 		bonus += get_stat_bonus(self.armor, stat)
 		return bonus
+	def rest(self):
+		self.update_actions()
+		if self.actions == Character.MAX_ACTIONS:
+			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
+		if self.actions > 0:
+			self.actions -= 1
+			self.save()
+			self.total_choices += 1
+			self.save()
 	def update_actions(self):
 		while datetime.utcnow().replace(tzinfo=utc) > self.refill_time and self.actions < Character.MAX_ACTIONS:
 			self.actions = self.actions + 1

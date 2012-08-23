@@ -1,5 +1,6 @@
 <html>
 <body>
+{% autoescape off %}
 {% if battle %}
 <h1>{{battle.title}}</h1>
 <p>{{battle.description}}</p>
@@ -16,5 +17,6 @@
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
 {% endif %}
+{% endautoescape %}
 </body>
 </html>

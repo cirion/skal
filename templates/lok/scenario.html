@@ -1,8 +1,9 @@
 <html>
 <body>
+{% autoescape off %}
 {% if scenario %}
 <h1>{{scenario.title}}</h1>
-<p>{{scenario.description}}</p>
+<p>{{scenario.description|safe}}</p>
 	{% for choice in choices %}
 <h2>{{choice.title}}</h2>
 <p>{{choice.description}}</p>
@@ -34,5 +35,6 @@
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
 {% endif %}
+{% endautoescape %}
 </body>
 </html>

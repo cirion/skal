@@ -8,11 +8,13 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
+from django.core.mail import send_mail
 from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location
 import random
 from random import Random
 from lok.models import GENDER_MALE as GENDER_MALE
 from lok.utils import level_from_value as level_from_value
+from lok.forms import ContactForm
 
 @login_required
 def create_character(request):
@@ -389,4 +391,29 @@ def random_weighted_sample_no_replacement(items, random, n):
     heap = rws_heap(items)              # just make a heap...
     for i in range(n):
         yield rws_heap_pop(heap, random)        # and pop n items off it.
+
+def contact(request):
+	if request.method == 'POST':
+		form = ContactForm(request.POST)
+		if form.is_valid():
+			cd = form.cleaned_data
+			send_mail(
+				"SKAL: " + cd['type'],
+				cd['email'] + ":" + cd['message'],
+				cd.get('email', 'noreply@example.com'),
+				['cirion@gmail.com'],
+			)
+			return HttpResponseRedirect('/lok/thanks/')
+	else:
+		form = ContactForm()
+	return render_to_response('lok/contact_form.html', {'form': form}, context_instance=RequestContext(request))
+
+def thanks(request):
+	return render_to_response('lok/thanks.html', {})
+
+def rest(request):
+	current_character = Character.objects.get(player=request.user.id)
+	current_character.rest()
+	return render_to_response('lok/rest.html', {})
+	
 

@@ -2,6 +2,7 @@
 <head>
 <title>Market</title>
 <body>
+{% autoescape off %}
 <p>You have {{royals}} royals to spend.</p>
 {% if not sellable_items and not buyable_items %}
 <p>No items are currently available to buy or to sell. Please try back later.</p>
@@ -47,5 +48,6 @@
 {% endfor %}
 </ul>
 {% endif %}
+{% endautoescape %}
 </body>
 </html>

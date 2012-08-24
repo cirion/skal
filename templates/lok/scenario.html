@@ -1,12 +1,13 @@
+{% load lok_extras %}
 <html>
 <body>
 {% autoescape off %}
 {% if scenario %}
-<h1>{{scenario.title}}</h1>
-<p>{{scenario.description|safe}}</p>
+<h1>{{scenario.title|macro:character}}</h1>
+<p>{{scenario.description|safe|macro:character}}</p>
 	{% for choice in choices %}
-<h2>{{choice.title}}</h2>
-<p>{{choice.description}}</p>
+<h2>{{choice.title|macro:character}}</h2>
+<p>{{choice.description|macro:character}}</p>
 		{% if choice.required_stats %}
 <p>This choice requires the following stats: </p>
 			{% for stat in choice.required_stats %}

@@ -3,7 +3,7 @@
 <body>
 {% autoescape off %}
 {% if result %}
-<h1>{{result.title}}</h1>
+<h1>{{result.title|macro:character}}</h1>
 <p>{{result.description|linebreaksbr|macro:character}}</p>
 	{% if changes %}
 <ul>

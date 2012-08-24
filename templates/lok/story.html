@@ -1,3 +1,4 @@
+{% load lok_extras %}
 <html>
 <body>
 {% autoescape off %}
@@ -9,8 +10,8 @@
 <p>You can visit the <a href="/lok/market/">market</a> here.</p>
 {% if scenarios %}
 	{% for scenario in scenarios %}
-	<h1><a href="/lok/scenario/{{scenario.id}}">{{scenario.title}}</a></h1>
-	<p>{{scenario.description}}</p>
+	<h1><a href="/lok/scenario/{{scenario.id}}">{{scenario.title|macro:character}}</a></h1>
+	<p>{{scenario.description|macro:character}}</p>
 	{% endfor %}
 <p style="text-align:center">If you don't see anything here that interests you, you can <a href="/lok/rest/">rest</a> for the day and see if anything changes.</p>
 <p style="text-align:center">Have something to say? Please <a href="/lok/contact/">contact us</a>!</p>

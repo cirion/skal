@@ -1,9 +1,10 @@
+{% load lok_extras %}
 <html>
 <body>
 {% autoescape off %}
 {% if battle %}
-<h1>{{battle.title}}</h1>
-<p>{{battle.description}}</p>
+<h1>{{battle.title|macro:character}}</h1>
+<p>{{battle.description|macro:character}}</p>
 {% if not weapon %}
 <p>You face this enemy using only your fists.</p>
 {% else %}

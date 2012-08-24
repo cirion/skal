@@ -12,7 +12,6 @@ from django.core.mail import send_mail
 from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location
 import random
 from random import Random
-from lok.models import GENDER_MALE as GENDER_MALE
 from lok.utils import level_from_value as level_from_value
 from lok.forms import ContactForm
 
@@ -49,7 +48,7 @@ def character(request):
 	esteems = CharacterStat.objects.filter(character = current_character, stat__type = Stat.TYPE_ESTEEM)
 	for esteem in esteems:
 		esteem.value = level_from_value(esteem.value)
-	if current_character.gender == GENDER_MALE:
+	if current_character.gender == Character.GENDER_MALE:
 		title = "Mr."
 	else:
 		title = "Ms."
@@ -211,7 +210,7 @@ def scenario(request, scenario_id):
 		result = current_character.odds_against(battle)
 		odds = result['odds']
 		weapon = result['weapon']
-		return render_to_response('lok/battle.html', {'battle': battle, 'choice': Choice.objects.get(scenario=scenario_id), 'odds': int(odds * 100), 'weapon': weapon}, context_instance=RequestContext(request))
+		return render_to_response('lok/battle.html', {'battle': battle, 'choice': Choice.objects.get(scenario=scenario_id), 'odds': int(odds * 100), 'weapon': weapon, 'character': current_character}, context_instance=RequestContext(request))
 	except Exception:
 		choices = list(Choice.objects.filter(scenario=scenario_id))
 		final_choices = list()
@@ -224,7 +223,7 @@ def scenario(request, scenario_id):
 				if (ChoiceMoneyPreReq.objects.filter(choice=choice.pk)):
 					choice.required_money = ChoiceMoneyPreReq.objects.get(choice=choice.pk)
 				final_choices.append(choice)
-		return render_to_response('lok/scenario.html', {'scenario': scenario, 'choices': final_choices}, context_instance=RequestContext(request))
+		return render_to_response('lok/scenario.html', {'scenario': scenario, 'choices': final_choices, 'character': current_character}, context_instance=RequestContext(request))
 	
 
 @login_required

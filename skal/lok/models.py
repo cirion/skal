@@ -9,13 +9,6 @@ from random import Random
 import logging
 logger = logging.getLogger(__name__)
 
-GENDER_FEMALE = 1
-GENDER_MALE = 2
-GENDER_CHOICES = (
-	(GENDER_FEMALE, "Female"),
-	(GENDER_MALE, "Male"),
-)
-
 def valid_for_plot_pre_reqs(character, pre_reqs):
 	if pre_reqs:
 		try:
@@ -157,6 +150,8 @@ class Plot(models.Model):
 	description = models.TextField(max_length=2000)
 	def __unicode__(self):
 		return self.name
+	class Meta:
+		ordering = ['-id']
 
 class Item(models.Model):
 	name = models.CharField(max_length=100)
@@ -443,6 +438,12 @@ class RouteToll(RouteOption):
 		return self.description + " The fee is " + str(self.amount) + " royals."
 
 class Character(models.Model):
+	GENDER_FEMALE = 1
+	GENDER_MALE = 2
+	GENDER_CHOICES = (
+		(GENDER_FEMALE, "Female"),
+		(GENDER_MALE, "Male"),
+	)
 	MAX_ACTIONS = 20
 	#ACTION_RECHARGE_TIME_SECS = 900
 	ACTION_RECHARGE_TIME_SECS = 30

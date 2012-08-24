@@ -64,6 +64,7 @@ class StatOutcomeInline(admin.TabularInline):
 class PlotOutcomeInline(admin.TabularInline):
 	model = PlotOutcome
 	extra = 1
+	ordering = ['-plot__pk']
 
 class ItemOutcomeInline(admin.TabularInline):
 	model = ItemOutcome

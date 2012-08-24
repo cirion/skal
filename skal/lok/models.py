@@ -468,6 +468,9 @@ class Character(models.Model):
 	armor = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_ARMOR}, null=True, blank=True, related_name='+')
 	def __unicode__(self):
 		return self.name
+	def title_name(self):
+		# Eventually, this should look at gender, achivements, renown, etc., and give an appropriate prefix to everything.
+		return self.name
 	def stat_bonus(self, stat):
 		bonus = 0
 		bonus += get_stat_bonus(self.sword, stat)

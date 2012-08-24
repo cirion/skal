@@ -230,9 +230,10 @@ def scenario(request, scenario_id):
 @login_required
 def result(request, result_id):
 	result = Result.objects.get(pk=result_id)
+	current_character = Character.objects.get(player=request.user.id)
 	# Storing changes in the session so we can report on what happened after we're redirected from the POST. This basically lets us (a) protect against multiple submissions, and (b) give useful feedback even if the page load was interrupted. In a production environment, we'd need to more carefully monitor what data we're keeping in session and clear it out after they move on to another page.
 	changes = request.session.get('changes')
-	return render_to_response('lok/result.html', {'result': result, 'changes': changes})
+	return render_to_response('lok/result.html', {'result': result, 'character': current_character, 'changes': changes})
 
 @login_required
 def battle_result(request, result_id):

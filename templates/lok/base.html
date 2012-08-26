@@ -1,0 +1,181 @@
+{% load staticfiles %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+<title>{% block title %}Skal{% endblock %}</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+
+
+<link href="{% static "my.css" %}" rel="stylesheet" type="text/css" />
+<link href="{% static "menu.css" %}" rel="stylesheet" type="text/css" />
+
+<!--[if lt IE 7]>
+<style type="text/css" media="screen">
+#menuh{float:none;}
+body{behavior:url(csshover.htc); font-size:75%;}
+#menuh ul li{float:left; width: 100%;}
+#menuh a{height:1%;font:normal 1em/1.6em "Trebuchet MS", helvetica, arial, sans-serif;}
+</style>
+<![endif]-->
+
+</head>
+
+<body>
+
+<div id="container">
+
+<div id="top">
+<!--
+<p><a href="#">Homepage</a> | 
+<a href="mailto:denise@mitchinson.net"> Contact </a></p>
+-->
+<p/><p/>
+<h1>{% block title2 %}Skal{% endblock %}</h1>
+
+</div>
+
+<!-- Begin CSS Horizontal Popout Menu -->
+
+<div id="menuh-container">	
+<div id="menuh">
+		
+<ul>
+<li><a href="/" class="top_parent">&nbsp; Story</a>
+
+<!--
+<ul>
+<li><a href="#">&bull; About</a></li>
+</ul>
+-->
+</li>
+</ul>
+	
+<ul>
+<li><a href="#" class="top_parent">&nbsp; Travel</a>
+	
+<!--
+<ul>
+<li><a href="#">&bull; Link 1</a></li>
+<li><a href="#">&bull; Link 2</a></li>
+<li><a href="#">&bull; Link 3</a></li>
+
+</ul>
+-->
+
+</li>
+</ul>
+
+<ul>
+<li><a href="#" class="top_parent">&nbsp;  Market</a>
+
+<!--
+<ul>
+<li><a href="#">&bull; Link 1</a></li>
+<li><a href="#">&bull; Link 2</a></li>
+<li><a href="#">&bull; Link 3</a></li>
+
+</ul>
+-->
+
+</li>
+</ul>
+
+<ul>
+<li><a href="#" class="top_parent">&nbsp; Profile</a>
+
+</li>
+</ul>
+
+<!--
+<ul>	
+<li><a href="#" class="top_parent">&nbsp; Resources</a>
+		
+</li>
+</ul>
+-->
+
+<ul>
+<li><a href="#" class="top_parent">&nbsp; Contact</a>
+
+</li>
+</ul>
+</div>
+</div>
+		<!-- End CSS Horizontal Popout Menu -->
+
+<!--
+<div id="leftnav">
+
+<h3>Quote</h3>
+
+<p class="quote">"You can't depend on your eyes if your imagination is out of focus" ~ Mark Twain</p>
+
+<h3>Links</h3>
+
+<div id="nav">
+<ul id="navlist">
+<li><a href="#">Item 1</a></li>
+<li><a href="#">Item 2</a></li>
+<li><a href="#">Item 3</a></li>
+<li><a href="#">Item 4</a></li>
+<li><a href="#">Item 5</a></li>
+<li><a href="#">Item 6</a></li>
+<li><a href="#">Item 7</a></li></ul>
+</div>
+
+<p> Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi quis ligula. Donec tortor purus, ornare vel, tincidunt at, lacinia ac, leo. Nunc fermentum congue odio. Mauris cursus, pede vitae sagittis luctus, dolor felis aliquam arcu, ac pulvinar lacus massa non ipsum. </p>
+
+<h3>Search</h3>
+
+<div class="search">
+<form method="post" action="?">
+<p><input type="text" name="search" class="search" /> <input type="submit" value="Search" class="searchSubmit" /></p>
+</form> </div>
+
+</div>
+-->
+
+<div id="content">
+
+<h2>{% block heading %}Greetings!{% endblock %}</h2>
+
+<blockquote>{% block intro %}{% endblock %}</blockquote> 
+<!--
+
+<p><img class="imgright" src="images/img1.jpg" alt="" /> This is a <a href="#">link</a> to nowhere. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Sed id felis eu urna mollis auctor. Nam eget sapien. In nec ante ut urna commodo auctor. Etiam nibh. Maecenas a metus. Nam at lacus id felis vestibulum accumsan. Aenean purus sapien, eleifend in, pharetra vel, commodo aliquam, mi. Aliquam egestas arcu a orci. Ut vulputate sem et urna. Praesent sit amet elit. Duis augue felis, molestie non, malesuada nonummy, laoreet sit amet, magna. Donec nec lorem. Nullam fringilla, augue eu laoreet condimentum, massa justo molestie lacus, eget commodo diam mi vitae pede. Morbi blandit posuere pede. </p>
+-->
+{% block content %}{%endblock%}
+
+<!--
+<h2>News</h2>
+
+<p><span style="float:left;color:#656C4A;font-size:50px;line-height:35px;padding-top:2px;font-family: Times, Georgia,serif;"> O</span>ctober 01st 2006.<br /><br /> Aliquam erat volutpat. Vivamus tempus. Aliquam vel nunc. Aliquam felis. Proin purus. Maecenas ultrices, lectus quis posuere placerat, erat pede rhoncus mi, a mattis felis metus ut purus. Praesent nec mauris ac dolor facilisis adipiscing. Praesent tempus turpis a risus. Morbi congue. Etiam et lacus et lacus mattis luctus. Vestibulum sed odio non lacus suscipit blandit. Pellentesque tincidunt odio sit amet lorem. Sed at libero a erat aliquet fermentum.</p>
+
+<h2>Random Pics </h2>
+
+<div id="gallery">
+<img src="images/img3.jpg" alt="" />
+<img src="images/img3.jpg" alt="" />
+<img src="images/img3.jpg" alt="" />
+<img src="images/img3.jpg" alt="" />
+
+</div>
+
+<div class="clear"></div>
+
+<p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Morbi quis ligula. Donec tortor purus, ornare vel, tincidunt at, lacinia ac, leo. Nunc fermentum congue odio. Mauris cursus, pede vitae sagittis luctus, dolor felis aliquam arcu, ac pulvinar lacus massa non ipsum. Praesent volutpat, felis in consectetuer lobortis, nibh orci nonummy quam, nec lobortis tellus purus eget turpis.</p>
+-->
+
+</div>
+
+<div id="footer">
+
+<a href="/">home</a> | <a href="/lok/contact">contact</a> | &copy; 2013 Seberin | Design by <a href="http://www.mitchinson.net"> www.mitchinson.net</a> | This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0  License</a>
+</div>
+
+</div>
+</body>
+</html>

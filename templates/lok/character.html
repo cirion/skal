@@ -113,7 +113,8 @@
 {% if plots %}
 <p>You are involved in the following tales.</p>
 {%for plot in plots %}
-<li>{{plot.plot.description}}</li>
+<h4>{{plot.plot.name}}</h4>
+<p>{{plot.description}}</p>
 {% endfor  %}
 {% endif %}
 {% if achievements %}

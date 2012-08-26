@@ -9,7 +9,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
 from django.core.mail import send_mail
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription
 import random
 from random import Random
 from lok.utils import level_from_value as level_from_value
@@ -38,12 +38,20 @@ def dead(request):
 @login_required
 def character(request):
 	current_character = Character.objects.get(player=request.user.id)
-	skills = list(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_SKILL))
+	skills = CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_SKILL, value__gte = 10)
 	for skill in skills:
 		skill.value = level_from_value(skill.value) + current_character.stat_bonus(skill.stat)
-	plots = CharacterPlot.objects.filter(character = current_character, plot__visible = True, plot__achievement = False, value__lt = Plot.MAX_LEVEL)
+	plots = CharacterPlot.objects.filter(character = current_character, plot__visible = True, plot__achievement = False )
+	plot_descriptions = list()
+	for plot in plots:
+		print "Looking at " + plot.__unicode__() + "  " + str(plot.pk) + " value = " + str(plot.value)
+		for arg in PlotDescription.objects.filter(plot = plot.plot.pk):
+			print "Candidate " + " " + str(arg.pk) + ":" + arg.__unicode__() + ": " + str(arg.value)
+		if PlotDescription.objects.filter(plot = plot.plot.pk, value = plot.value):
+			print "Got a match."
+			plot_descriptions.append(PlotDescription.objects.get(plot=plot.plot, value=plot.value))
 	achievements = CharacterPlot.objects.filter(character = current_character, plot__achievement = True)
-	items = CharacterItem.objects.filter(character = current_character)
+	items = CharacterItem.objects.filter(character = current_character, quantity__gt = 0)
 	fame = level_from_value(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME)[0].value)
 	esteems = CharacterStat.objects.filter(character = current_character, stat__type = Stat.TYPE_ESTEEM)
 	for esteem in esteems:
@@ -62,7 +70,7 @@ def character(request):
 	rings = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_RING)
 	neck = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_NECK)
 	armors = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_ARMOR)
-	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plots, 'achievements': achievements, 'title': title, 'swords': swords, 'bashing': bashing, 'bows': bows, 'feet': feet, 'cloaks': cloaks, 'clothes': clothes, 'gloves': gloves, 'rings': rings, 'neck': neck, 'armors': armors})
+	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plot_descriptions, 'achievements': achievements, 'title': title, 'swords': swords, 'bashing': bashing, 'bows': bows, 'feet': feet, 'cloaks': cloaks, 'clothes': clothes, 'gloves': gloves, 'rings': rings, 'neck': neck, 'armors': armors})
 
 @login_required
 def story(request):
@@ -86,19 +94,8 @@ def story(request):
 		if len(out_scenarios) >= max_scenarios:
 			break
 
-	"""
-	pseudo.shuffle(scenarios)"""
-
-	#while (len(out_scenarios) < max_scenarios and scenarios):
-	#	scenario = scenarios.pop(0)
 	routes = get_routes(current_character)
 	return render_to_response('lok/story.html', {'routes': routes, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
-
-#class ItemInfo(model.Models):
-#	item = model.ForeignKey(Item)
-#	price = model.IntegerField()
-#	quantity = model.IntegerField(default=1)
-#	stats = 
 
 @login_required
 def market(request):

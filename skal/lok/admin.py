@@ -1,10 +1,13 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image
 from functools import partial
 from django.forms import MediaDefiningClass
 
 from admin_enhancer import admin as enhanced_admin
 
 from django.contrib import admin
+
+from imagekit.admin import AdminThumbnail
+from .models import Image
 
 #override of the InlineModelAdmin to support the link in the tabular inline
 #class LinkedInline(admin.options.InlineModelAdmin):
@@ -190,8 +193,16 @@ class EquipmentAdmin(admin.ModelAdmin):
         	request.GET = data
         	return super(EquipmentAdmin, self).add_view(request, form_url="", extra_context=extra_context)
 
+class PlotDescriptionInline(admin.TabularInline):
+	model = PlotDescription
+	extra = 1
+
 class PlotAdmin(admin.ModelAdmin):
 	model = Plot
+	inlines = [PlotDescriptionInline]
+
+class PlotDescriptionAdmin(admin.ModelAdmin):
+	model = PlotDescription
 
 class LocationAdmin(admin.ModelAdmin):
 	inlines = [ItemLocationInline]
@@ -215,6 +226,11 @@ class RouteItemCostAdmin(admin.ModelAdmin):
 class RouteTollAdmin(admin.ModelAdmin):
 	model = RouteToll
 
+class ImageAdmin(admin.ModelAdmin):
+	list_display = ('__str__', 'admin_thumbnail')
+	admin_thumbnail = AdminThumbnail(image_field='thumbnail')
+	model = Image
+
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
@@ -230,3 +246,5 @@ admin.site.register(RouteItemFree, RouteItemFreeAdmin)
 admin.site.register(RouteItemCost, RouteItemCostAdmin)
 admin.site.register(RouteToll, RouteTollAdmin)
 admin.site.register(RouteFree, RouteFreeAdmin)
+admin.site.register(PlotDescription, PlotDescriptionAdmin)
+admin.site.register(Image, ImageAdmin)

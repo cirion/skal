@@ -3,7 +3,10 @@
 <body>
 {% autoescape off %}
 {% if scenario %}
-<h1>{{scenario.title|macro:character}}</h1>
+<h1 align="center">{{scenario.title|macro:character}}</h1>
+{% if scenario.portrait %}
+<p align="center"><img src="{{scenario.portrait.scaled.url}}" /></p>
+{% endif %}
 <p>{{scenario.description|safe|macro:character}}</p>
 	{% for choice in choices %}
 <h2>{{choice.title|macro:character}}</h2>

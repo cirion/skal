@@ -1,4 +1,5 @@
 from django.conf.urls import patterns, include, url
+from django.conf import settings
 
 urlpatterns = patterns('lok.views',
 	url(r'^story/$', 'story'),
@@ -20,4 +21,6 @@ urlpatterns = patterns('lok.views',
 	url(r'^contact/$', 'contact'),
 	url(r'^thanks/$', 'thanks'),
 )
+
+
 

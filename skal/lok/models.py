@@ -7,6 +7,9 @@ from lok.utils import value_from_level as value_from_level
 import random
 from random import Random
 import logging
+from imagekit.models import ImageSpecField 
+from imagekit.processors import ResizeToFill, Adjust, ResizeToFit
+
 logger = logging.getLogger(__name__)
 
 def valid_for_plot_pre_reqs(character, pre_reqs):
@@ -65,9 +68,20 @@ def valid_for_level_pre_reqs(character, pre_reqs):
 			return False
 	return True
 
+class Image(models.Model):
+	title = models.CharField(max_length=100)
+	alt = models.CharField(max_length=500)
+	contributor = models.CharField(max_length=100,blank=True,null=True)
+	contributor_link = models.CharField(max_length=200,blank=True,null=True)
+	image = models.ImageField(upload_to='images')
+	thumbnail = ImageSpecField([ResizeToFill(50, 50)], image_field='image', format='JPEG', options={'quality': 90})
+	scaled = ImageSpecField([ResizeToFit(400, 1000)], image_field='image', format='JPEG', options={'quality': 90})
+	def __unicode__(self):
+		return self.title
+
 class Scenario(models.Model):
 	title = models.CharField(max_length=100)
-	image = models.ImageField(blank=True,null=True,upload_to="/home/chris/django/skal/pics")
+	portrait = models.ForeignKey(Image, null=True, blank=True)
 	description = models.TextField(max_length=2000)
 	weight = models.IntegerField(default=10000)
 	TYPE_QUEST = 1
@@ -153,6 +167,13 @@ class Plot(models.Model):
 	class Meta:
 		ordering = ['-id']
 
+class PlotDescription(models.Model):
+	plot = models.ForeignKey(Plot)
+	value = models.IntegerField()
+	description = models.TextField(max_length=2000)
+	def __unicode__(self):
+		return self.plot.name + ": " + self.description
+
 class Item(models.Model):
 	name = models.CharField(max_length=100)
 	value = models.IntegerField(default=1)
@@ -197,13 +218,15 @@ class Stat(models.Model):
 	TYPE_FAME = 2
 	TYPE_ESTEEM = 3
 	TYPE_CHARACTERISTIC = 4
+	TYPE_PROGRESS = 5
 	TYPE_CHOICES = (
 		(TYPE_SKILL, "Skill"),
 		(TYPE_FAME, "Fame"),
 		(TYPE_ESTEEM, "Esteem"),
 		(TYPE_CHARACTERISTIC, "Characteristic"),
+		(TYPE_PROGRESS, "Progress"),
 	)
-	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_SKILL)
+	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_PROGRESS)
 	name = models.CharField(max_length=50)
 	def __unicode__(self):
 		return self.name
@@ -335,6 +358,7 @@ class Result(models.Model):
 		(FAILURE, "Failure"),
 	)
 	type = models.IntegerField(choices=CHOICES, default=SUCCESS)
+	portrait = models.ForeignKey(Image, null=True, blank=True)
 	weight = models.IntegerField(default=1)
 	choice = models.ForeignKey(Choice)
 	title = models.CharField(max_length=100)

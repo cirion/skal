@@ -24,7 +24,9 @@
 	<h2><a href="/lok/scenario/{{scenario.id}}">{{scenario.title|macro:character}}</a></h2>
 	<p>{{scenario.description|macro:character}}</p>
 	{% endfor %}
+{% if character.location.type != 4 %} {#Location.TYPE_NONE #}
 <blockquote>If you don't see anything here that interests you, you can <a href="/lok/rest/">rest</a> for the day and see if anything changes.</blockquote>
+{% endif %}
 {% else %}
 	<p>Whoops! There should be some stories here for you. Sorry about that, please check back soon!</p>
 {% endif %}

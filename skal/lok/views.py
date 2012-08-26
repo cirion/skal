@@ -27,6 +27,8 @@ def create_character(request):
 		character.money = 0
 		character.gender = request.POST['gender']
 		character.location = Location.objects.get(name="Your Childhood Home")
+		character.refill_time = datetime.utcnow().replace(tzinfo=utc)
+		character.current_health = character.max_health()
 		character.save()
 		return HttpResponseRedirect('/lok/story/')
 	return render_to_response('lok/create_character.html', {}, context_instance=RequestContext(request))
@@ -52,7 +54,9 @@ def character(request):
 			plot_descriptions.append(PlotDescription.objects.get(plot=plot.plot, value=plot.value))
 	achievements = CharacterPlot.objects.filter(character = current_character, plot__achievement = True)
 	items = CharacterItem.objects.filter(character = current_character, quantity__gt = 0)
-	fame = level_from_value(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME)[0].value)
+	fame = 0
+	if CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME):
+		fame = level_from_value(CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME)[0].value)
 	esteems = CharacterStat.objects.filter(character = current_character, stat__type = Stat.TYPE_ESTEEM)
 	for esteem in esteems:
 		esteem.value = level_from_value(esteem.value)

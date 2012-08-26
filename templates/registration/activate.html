@@ -1,5 +1,6 @@
-<html>
-<body>
-<p>Hmmm, we weren't able to activate your account. Maybe the link was too old, or maybe something went wrong. Please try creating a new account, and if that still doesn't work, give us some time to work out the kinks.</p>
-</body>
-</html>
+{% extends "lok/base.html" %}
+{% load lok_extras %}
+{% block heading%}Couldn't Create Account{% endblock %}
+{% block intro %}
+<p>Hmmm, we weren't able to activate your account. Maybe the link was too old, or maybe something went wrong. Please try <a href="/lok/story/">creating a new account</a>, and if that still doesn't work, give us some time to work out the kinks.</p>
+{% endblock intro %}

@@ -1,20 +1,27 @@
-<html>
-<body>
-<h1>Who Are You?</h1>
+{% extends "lok/base.html" %}
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Who Are You?{% endblock %}
+{% block menu_story%}#404040;{% endblock %}
+{% block intro %}
 <p>Please tell us a little about yourself...</p>
+{% endblock %}
+
+{% block content %}
 {% if error %}
 <p>{{error}}</p>
 {% endif %}
 <form method="post" action=".">
 {% csrf_token %}
+	<label for="name">What is your character's name?</label><br/>
 	<input type="text" name="name" /> <br/>
+	<label for="male">What is your character's gender?</label></br/>
 	<label for="male">
 	<input type="radio" id="male" name="gender" value="2" /> Male<br />
 	</label>
 	<label for="female">
 	<input type="radio" id="female" name="gender" value="1" checked="checked" /> Female<br />
 	</label>
-	<input type="submit" value="Be Born"/> 
+	<input class="button" type="submit" value="Be Born"/> 
 </form>
-</body>
-</html>
+{% endblock %}

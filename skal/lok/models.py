@@ -694,7 +694,7 @@ class Character(models.Model):
 					# Definitely play around with this! Right now I'm thinking the odds of a dodge increase will range between 1-5%, depending on the ratio between the character's stealth, deviousness and their level.
 					max_dodgy = 0
 					if (CharacterStat.objects.filter(character=self, stat__name="Deviousness")):
-						max_dodgy=level_from_value(CharacterStat.objects.get(character=self,stat__name="Deviousness"))
+						max_dodgy=level_from_value(CharacterStat.objects.get(character=self,stat__name="Deviousness").value)
 					if (CharacterStat.objects.filter(character=self, stat__name="Stealth")):
 						stealthy=level_from_value(CharacterStat.objects.get(character=self,stat__name="Stealth").value)
 						if stealthy > max_dodgy:

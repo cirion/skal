@@ -1,10 +1,15 @@
-{% load lok_extras %}
-<html>
-<body>
+{% extends "lok/base.html" %}
 {% autoescape off %}
-{% if battle %}
-<h1>{{battle.title|macro:character}}</h1>
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}{{battle.title|macro:character}}{% endblock %}
+{% block menu_story%}#404040;{% endblock %}
+{% block intro %}
 <p>{{battle.description|macro:character}}</p>
+{% endblock %}
+
+{% block content %}
+{% if battle %}
 {% if not weapon %}
 <p>You face this enemy using only your fists.</p>
 {% else %}
@@ -13,11 +18,10 @@
 <p>You figure your odds of success are around {{odds}}%</p>
 <form method="post" action="/lok/battle/{{battle.id}}/">
 {% csrf_token %}
-	<input type="submit" value="Fight!"/> 
+	<input class="button" type="submit" value="Fight!"/> 
 </form>
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
 {% endif %}
+{% endblock %}
 {% endautoescape %}
-</body>
-</html>

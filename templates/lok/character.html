@@ -1,25 +1,32 @@
-<html>
-<body>
+{% extends "lok/base.html" %}
 {% autoescape off %}
-<h1>
-{{title}} {{character.name}}
-</h1>
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}{{character.title_name}}{%endblock %}
+{% block menu_character%}#404040;{% endblock %}
+{% block intro %}
 <p>You are currently in {{character.location.name}}.</p>
-<ul>
-<li>You own {{character.money}} royals.</li>
+<p>You own {{character.money}} royal{{character.money|pluralize}}.</p>
 {% if fame%}
-<li>Your fame has reached level {{fame}}</li>
+<p>Your fame has reached level {{fame}}</p>
+<p>You have {{character.current_health}} health from a maximum of {{character.max_health}}</p>
 {%endif%}
-<li>You have {{character.current_health}} health from a maximum of {{character.max_health}}
+{% endblock intro %}
+
+{% block content %}
+<h2>Skills</h2>
 {%for skill in skills %}
 <li>{{skill.stat.name}} is level {{skill.value}}</li>
 {%endfor%}
+<h2>Reputations</h2>
 {%for esteem in esteem %}
 <li>{{esteem.stat.name}} regard you at level {{esteem.value}}</li>
 {%endfor%}
+<h2>Items</h2>
 {%for item in items %}
 <li>{{item.quantity}} {{item.item.name}}</li>
 {% endfor %}
+<h2>Equipment</h2>
 {% if character.sword %}
 <p>Your scabbard holds a {{character.sword.name}}</p>
 {% endif%}
@@ -111,6 +118,7 @@
 {% endfor %}
 {% endif %}
 {% if plots %}
+<h2>Active Quests</h2>
 <p>You are involved in the following tales.</p>
 {%for plot in plots %}
 <h4>{{plot.plot.name}}</h4>
@@ -118,12 +126,12 @@
 {% endfor  %}
 {% endif %}
 {% if achievements %}
+<h2>Completed Quests</h2>
 <p>You have become famous for the following deeds.</p>
 {% for achievement in achievements %}
 <li>{{achievement.plot.description}}</li>
 {% endfor %}
 {% endif %}
 </ul>
+{% endblock content %}
 {% endautoescape %}
-</body>
-</html>

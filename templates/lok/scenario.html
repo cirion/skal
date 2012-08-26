@@ -1,13 +1,17 @@
-{% load lok_extras %}
-<html>
-<body>
+{% extends "lok/base.html" %}
 {% autoescape off %}
-{% if scenario %}
-<h1 align="center">{{scenario.title|macro:character}}</h1>
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}{{scenario.title|macro:character}}{%endblock %}
+{% block menu_story%}#404040;{% endblock %}
+{% block intro %}
 {% if scenario.portrait %}
 <p align="center"><img src="{{scenario.portrait.scaled.url}}" /></p>
 {% endif %}
 <p>{{scenario.description|safe|macro:character}}</p>
+{% endblock %}
+{% block content %}
+{% if scenario %}
 	{% for choice in choices %}
 <h2>{{choice.title|macro:character}}</h2>
 <p>{{choice.description|macro:character}}</p>
@@ -30,7 +34,7 @@
 		{% if not choice.invalid %}
 <form method="post" action="/lok/choice/{{choice.id}}/">
 {% csrf_token %}
-	<input type="submit" value="Do this!"/> 
+	<input class="button" type="submit" value="Do this!"/> 
 </form>
 		{% else %}
 <p>You cannot attempt this choice at this time.</p>
@@ -39,6 +43,5 @@
 {% else %}
 <p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
 {% endif %}
+{% endblock content %}
 {% endautoescape %}
-</body>
-</html>

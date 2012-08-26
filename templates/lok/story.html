@@ -1,11 +1,13 @@
 {% extends "lok/base.html" %}
 
 {% load lok_extras %}
-{% block title%}Lok{% endblock %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Story{% endblock %}
+{% block menu_story%}#404040;{% endblock %}
 
 {% autoescape off %}
 {% block intro %}
-<p>Greetings, <a href="/lok/character/">{{character.name}}</a>. You are in {{character.location.name}}.</p>
+<p>Greetings, {{character.name}}. You are in {{character.location.name}}.</p>
 <p>You have {{actions}} blank page{{actions|pluralize}} available to write your story.</p>
 {% endblock intro %}
 
@@ -22,8 +24,7 @@
 	<h2><a href="/lok/scenario/{{scenario.id}}">{{scenario.title|macro:character}}</a></h2>
 	<p>{{scenario.description|macro:character}}</p>
 	{% endfor %}
-<p style="text-align:center">If you don't see anything here that interests you, you can <a href="/lok/rest/">rest</a> for the day and see if anything changes.</p>
-<p style="text-align:center">Have something to say? Please <a href="/lok/contact/">contact us</a>!</p>
+<blockquote>If you don't see anything here that interests you, you can <a href="/lok/rest/">rest</a> for the day and see if anything changes.</blockquote>
 {% else %}
 	<p>Whoops! There should be some stories here for you. Sorry about that, please check back soon!</p>
 {% endif %}

@@ -238,6 +238,16 @@ form {
 margin: 0; 
 }
 
+input.button {
+	background: #656C4A;
+	color: #ffffff;
+}
+
+input.button:hover {
+	background: #AC7D3;
+	color: #ffffff;
+}
+
 input.search { 
 	width: 80px; 
 	border: none;

@@ -46,14 +46,14 @@
 			
 #menuh a.top_parent, #menuh a.top_parent:hover  /* attaches down-arrow to all top-parents */
 	{text-transform: uppercase;
-	background-image: url(images/navdown_white.gif);
+	/*background-image: url(images/navdown_white.gif);*/
 	background-position: right center;
 	background-repeat: no-repeat;
 	}
 	
 #menuh a.parent, #menuh a.parent:hover 	/* attaches side-arrow to all parents */
 	{
-	background-image: url(images/nav_white.gif);
+	/*background-image: url(images/nav_white.gif);*/
 	background-position: right center;
 	background-repeat: no-repeat;
 	}

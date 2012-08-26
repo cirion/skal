@@ -99,7 +99,16 @@ def story(request):
 			break
 
 	routes = get_routes(current_character)
-	return render_to_response('lok/story.html', {'routes': routes, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
+	next_page_time_string = ""
+	if current_character.actions < 20:
+		next_page_time = current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)
+		minutes, seconds = divmod(next_page_time.seconds, 60)
+		if minutes == 1:
+			next_page_time_string = "1 minute " 
+		elif minutes > 1:
+			next_page_time_string = "%s minutes " % (minutes)
+		next_page_time_string = next_page_time_string +  "%s seconds" % (seconds)
+	return render_to_response('lok/story.html', {'routes': routes, 'next_page_time': next_page_time_string, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
 
 @login_required
 def market(request):

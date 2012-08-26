@@ -9,6 +9,9 @@
 {% block intro %}
 <p>Greetings, {{character.name}}. You are in {{character.location.name}}.</p>
 <p>You have {{actions}} blank page{{actions|pluralize}} available to write your story.</p>
+{% if next_page_time %}
+<p>You will receive a new blank page in {{next_page_time}}.</p>
+{% endif %}
 {% endblock intro %}
 
 {% comment %}

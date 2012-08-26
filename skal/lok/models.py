@@ -493,6 +493,7 @@ class Character(models.Model):
 	total_choices = models.IntegerField(default=0)
 	actions = models.IntegerField(default=20)
 	refill_time = models.DateTimeField()
+	recharge_delay_secs = models.IntegerField(default=900)
 	location = models.ForeignKey(Location)
 	sword = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_SWORD}, null=True, blank=True, related_name='+')
 	bashing = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_BASHING}, null=True, blank=True, related_name='+')
@@ -525,7 +526,7 @@ class Character(models.Model):
 	def rest(self):
 		self.update_actions()
 		if self.actions == Character.MAX_ACTIONS:
-			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
+			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, self.recharge_delay_secs)
 		if self.actions > 0:
 			self.actions -= 1
 			self.save()
@@ -534,7 +535,7 @@ class Character(models.Model):
 	def update_actions(self):
 		while datetime.utcnow().replace(tzinfo=utc) > self.refill_time and self.actions < Character.MAX_ACTIONS:
 			self.actions = self.actions + 1
-			self.refill_time = self.refill_time + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
+			self.refill_time = self.refill_time + timedelta(0, self.recharge_delay_secs)
 		self.save()
 	def odds_against(self, battle):
 		sword_strength = 0
@@ -598,7 +599,7 @@ class Character(models.Model):
 	def update_with_result(self, result, pre_reqs, battle, block_death):
 		changes = list()
 		if self.actions == Character.MAX_ACTIONS:
-			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, Character.ACTION_RECHARGE_TIME_SECS)
+			self.refill_time = datetime.utcnow().replace(tzinfo=utc) + timedelta(0, self.recharge_delay_secs)
 		self.actions = self.actions - 1
 
 		if battle:

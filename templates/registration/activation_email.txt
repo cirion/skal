@@ -4,4 +4,4 @@ Someone provided this email address when registering a new account at Skal. We c
 http://{{ site.domain }}{% url registration_activate activation_key %}
 That link will be valid for {{ expiration_days }} days.
 
-If that wasn't you, then we apologize for the disturbance; someone probably sent up the wrong address.
+If that wasn't you, then we apologize for the disturbance; someone probably sent us the wrong address.

@@ -1,10 +1,15 @@
-{% load url from future %}
-
-<html><body>
+{% extends "lok/base.html" %}
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Log In{%endblock %}
+{% block intro %}
 {% if form.errors %}
 <p>Your username and password didn't match. Please try again.</p>
 {% endif %}
+{% endblock %}
 
+{% block content %}
+{% load url from future %}
 <form method="post" action="{% url 'django.contrib.auth.views.login' %}">
 {% csrf_token %}
 <table>
@@ -18,9 +23,8 @@
 </tr>
 </table>
 
-<input type="submit" value="login" />
+<input class="button" type="submit" value="login" />
 <input type="hidden" name="next" value="{{ next }}" />
 </form>
 <p>Don't have an account yet? <a href="/accounts/register/">Register</a> for one now!</p>
-
-</body></html>
+{% endblock content %}

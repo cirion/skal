@@ -8,8 +8,19 @@
 {% endblock %}
 
 {% block content %}
-{% if scenario.portrait %}
-<p align="center"><img src="{{scenario.portrait.scaled.url}}" /></p>
+{% if result.portrait %}
+<div align="center">
+<img class="portrait" src="{{result.portrait.scaled.url}}" />
+{% if result.portrait.contributor_link %}
+<a href="{{result.portrait.contributor_link}}">
+{% endif %}
+{% if result.portrait.contributor %}
+<div class="contributor"><em>Image by {{result.portrait.contributor}}</em></div>
+{% endif %}
+{% if result.portrait.contributor_link %}
+</a>
+{% endif %}
+</div>
 {% endif %}
 <p>{{result.description|linebreaksbr|macro:character}}</p>
 	{% if changes %}
@@ -22,14 +33,14 @@
 			{% elif change.type == 3 %}
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 and change.old == 0 %}
-	<li>You now have {{change.new}} {{change.name}}{{change.new|pluralize}}.</li>
+	<li>You now have {{change.new}} {{change.name|lower}}{{change.new|pluralize}}.</li>
 			{% elif change.type == 5  and change.amount < 0 and change.new == 0%}
-	<li>You lost your {{change.name}}{{change.old|pluralize}}.</li>
+	<li>You lost your {{change.name|lower}}{{change.old|pluralize}}.</li>
 			{% elif change.type == 5  and change.amount < 0 %}
 {# Using widthratio is a bizarre but approved way to do math in a django template. #}
-	<li>You lost {%widthratio -1 1 change.amount%} {{change.name}}, for a new total of {{change.new}}.</li>
+	<li>You lost {%widthratio -1 1 change.amount%} {{change.name|lower}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 %}
-	<li>You gained {{change.amount}} {{change.name}}{{change.amount|pluralize}}, for a new total of {{change.new}}.</li>
+	<li>You gained {{change.amount}} {{change.name|lower}}{{change.amount|pluralize}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 1 %}
 	<li>{{change.name}} has increased by {{change.amount}} point{{change.amount|pluralize}}.</li>
 			{% elif change.type == 6 and change.amount < 0 %}
@@ -38,7 +49,7 @@
 	<li>Your health has increased from {{change.old}} to {{change.new}}.</li>
 			{% endif %}
 			{% if change.type == 13 %}
-	<li>You have learned the way to {{change.name}} and can travel here in the future.</li>
+	<li>You have learned the way to {{change.name}} and can travel there in the future.</li>
 			{% endif %}
 			{% if change.type == 14 %}
 	<li>You are now in {{change.name}}.</li>
@@ -46,6 +57,6 @@
 		{% endfor %}
 </ul>
 	{% endif %}
-<blockquote><p>I see! <a href="/lok/story/">Carry on, then.</p></a></blockquote>
+<blockquote><p><a href="/lok/story/"><input type="submit" class="button" value="Carry on, then."></input></p></a></blockquote>
 {% endblock %}
 {% endautoescape %}

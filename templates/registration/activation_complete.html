@@ -1,6 +1,11 @@
-<html>
-<body>
+{% extends "lok/base.html" %}
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Registration Complete{%endblock %}
+{% block intro %}
+{% endblock %}
+
+{% block content %}
 <p>Welcome to Skal! Your account is now active. Are you ready to go forth on your journey?</p>
 <p><a href="/lok/story/">I am ready!</a></p>
-</body>
-</html>
+{% endblock content %}

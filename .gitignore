@@ -4,3 +4,4 @@
 *.tmp
 skal/skal/settings.py
 *.swp
+*.out

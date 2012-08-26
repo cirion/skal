@@ -49,6 +49,7 @@
 	/*background-image: url(images/navdown_white.gif);*/
 	background-position: right center;
 	background-repeat: no-repeat;
+	font-size: 0.8em;
 	}
 	
 #menuh a.parent, #menuh a.parent:hover 	/* attaches side-arrow to all parents */

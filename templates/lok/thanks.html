@@ -1,9 +1,9 @@
-<html>
-<head>
-<title>Thank You</title>
-</head>
-<body>
+{% extends "lok/base.html" %}
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Thank You{% endblock %}
+{% block menu_contact%}#404040;{% endblock %}
+{% block intro %}
 <p>Thanks for taking the time to contact us. We can't always reply to messages, but we read everything you send. Enjoy your time in Skal!</p>
 <p><a href="/lok/story/">Return to Skal</a></p>
-</body>
-</html>
+{% endblock intro %}

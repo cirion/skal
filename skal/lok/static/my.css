@@ -7,7 +7,9 @@ body {
    color : #a52a2a;
    background : #404040;
    width : 100%;
-   font : 76% "Trebuchet MS", Tahoma, Arial, Helvetica, sans-serif;
+/*   font : 76% "Trebuchet MS", Tahoma, Arial, Helvetica, sans-serif;*/
+   font : 100% "Times New Roman", Times, serif;
+   font-size: 1.1em;
 }
 
 /* Links within paragraphs (subtle) */
@@ -29,8 +31,10 @@ width : 750px;
 margin : 0 auto;
 padding : 5px;
 background: #E4DCB2  url(images/bgd.jpg) repeat;
+min-height: 600px;
 color : #333;
 line-height : 1.5em;
+position: relative;
 }
 
 /* TOP TITLE BAR */
@@ -90,6 +94,10 @@ padding : .5em;
 color : #EAE8D0;
 background : #404040;
 border-top : 0px solid #520934;
+position: absolute;
+bottom: 0;
+font : 76% "Trebuchet MS", Tahoma, Arial, Helvetica, sans-serif;
+font-size: .7em;
 }
 
 #footer a:link, #footer a:visited {
@@ -245,6 +253,13 @@ form {
 margin: 0; 
 }
 
+/*
+form.register p label {
+	width: 350px;
+	padding: 20px;
+}
+*/
+
 input.button {
 	background: #656C4A;
 	color: #ffffff;
@@ -280,3 +295,11 @@ input.login {
   padding-right: 10px;
 }
 
+#space {
+  min-height: 30px;
+}
+
+.contributor {
+  font-size: .7em;	
+  font : sans-serif;
+}

@@ -8,7 +8,7 @@ from django.core.urlresolvers import reverse
 from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription
 import random
 from random import Random
@@ -395,16 +395,17 @@ def random_weighted_sample_no_replacement(items, random, n):
 
 def contact(request):
 	if request.method == 'POST':
-		form = ContactForm(request.POST)
+		form = ContactForm(request.POST, request.FILES)
 		if form.is_valid():
-			cd = form.cleaned_data
-			send_mail(
-				"SKAL: " + cd['type'],
-				cd['email'] + ":" + cd['message'],
-				cd.get('email', 'noreply@example.com'),
-				['cirion@gmail.com'],
-			)
-			return HttpResponseRedirect('/lok/thanks/')
+				cd = form.cleaned_data
+				mail = EmailMessage("SKAL: " + cd['type'],
+                                	cd['email'] + ":" + cd['message'],
+                                	cd.get('email', 'noreply@example.com'),
+                                	['cirion@gmail.com'])
+				attachment = request.FILES['attachment']
+				mail.attach(attachment.name, attachment.read(), attachment.content_type)
+				mail.send()
+				return HttpResponseRedirect('/lok/thanks/')
 	else:
 		form = ContactForm()
 	return render_to_response('lok/contact_form.html', {'form': form}, context_instance=RequestContext(request))

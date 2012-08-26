@@ -8,7 +8,7 @@
 {% if scenario.portrait %}
 <p align="center"><img src="{{scenario.portrait.scaled.url}}" /></p>
 {% endif %}
-<p>{{scenario.description|safe|macro:character}}</p>
+<p>{{scenario.description|safe|macro:character|linebreaksbr}}</p>
 {% endblock %}
 {% block content %}
 {% if scenario %}
@@ -27,7 +27,7 @@
 		{% if choice.required_items %}
 <p><em>
 			{% for item in choice.required_items %}
-Need at least {{item.minimum}} {{item.item.name}}.<br/>
+Need at least {{item.minimum}} {{item.item.name}}{{item.minimum|pluralize}}.<br/>
 			{% endfor %}
 </em></p>
 		{% endif %}

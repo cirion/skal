@@ -8,7 +8,7 @@ import random
 from random import Random
 import logging
 from imagekit.models import ImageSpecField 
-from imagekit.processors import ResizeToFill, Adjust, ResizeToFit
+from imagekit.processors import ResizeToFill, Adjust, ResizeToFit, AddBorder
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +21,12 @@ def valid_for_plot_pre_reqs(character, pre_reqs):
 				elif pre_req.value > 0 and CharacterPlot.objects.get(character = character.pk, plot = pre_req.plot).value != pre_req.value:
 					return False
 		except CharacterPlot.DoesNotExist:
+			return False
+	return True
+
+def valid_for_money_pre_req(character, pre_reqs):
+	if pre_reqs:
+		if pre_reqs[0].amount > character.money:
 			return False
 	return True
 
@@ -43,7 +49,8 @@ def valid_for_stat_pre_reqs(character, pre_reqs, enforceMax):
 					character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
 					level = level_from_value(character_stat.value)
 					level += character.stat_bonus(character_stat.stat)
-					if level_from_value(level) < pre_req.minimum:
+					print "For stat " + character_stat.stat.name + " comparing " + str(level) + ":" + str(level_from_value(level)) + " to " + str(pre_req.minimum)
+					if level < pre_req.minimum:
 						return False
 					elif enforceMax and level_from_value(character_stat.value) > pre_req.maximum:
 						return False
@@ -75,7 +82,8 @@ class Image(models.Model):
 	contributor_link = models.CharField(max_length=200,blank=True,null=True)
 	image = models.ImageField(upload_to='images')
 	thumbnail = ImageSpecField([ResizeToFill(50, 50)], image_field='image', format='JPEG', options={'quality': 90})
-	scaled = ImageSpecField([ResizeToFit(400, 1000)], image_field='image', format='JPEG', options={'quality': 90})
+	# Hrm... I wanted to add a colored border around this, but I can't seem to make it show as any color other than white. Can revisit later.
+	scaled = ImageSpecField([ResizeToFit(400, 1000), AddBorder(0)], image_field='image', format='JPEG', options={'quality': 90})
 	def __unicode__(self):
 		return self.title
 
@@ -153,6 +161,9 @@ class Choice(models.Model):
 			return False
 		pre_reqs = ChoicePlotPreReq.objects.filter(choice=self.pk)
 		if not valid_for_plot_pre_reqs(character,pre_reqs):
+			return False
+		pre_reqs = ChoiceMoneyPreReq.objects.filter(choice=self.pk)
+		if not valid_for_money_pre_req(character, pre_reqs):
 			return False
 		return True
 
@@ -327,14 +338,16 @@ class ChoiceStatPreReq(models.Model):
 		return str(self.stat)
 	def challenge(self, character):
 		try:
-			value = CharacterStat.objects.get(stat = self.stat).level()
+			value = CharacterStat.objects.get(character=character, stat = self.stat).level()
 		except CharacterStat.DoesNotExist:
 			value = 0
 		value += character.stat_bonus(self.stat)
+		print "Have " + str(value) + ", need " + str(self.maximum)
 		if value >= self.maximum:
 			return True
 		# Our odds of success are our progress between minimum and maximum.
-		odds = float(value - self.minimum) / float(self.maximum - self.minimum)
+		odds = float(value - self.minimum + 1) / float(self.maximum - self.minimum + 1)
+		print "Our odds are " + str(odds)
 		return random.random() < odds
 
 class ChoiceItemPreReq(models.Model):
@@ -469,8 +482,8 @@ class Character(models.Model):
 		(GENDER_MALE, "Male"),
 	)
 	MAX_ACTIONS = 20
-	#ACTION_RECHARGE_TIME_SECS = 900
-	ACTION_RECHARGE_TIME_SECS = 30
+	ACTION_RECHARGE_TIME_SECS = 900
+	#ACTION_RECHARGE_TIME_SECS = 30
 	player = models.ForeignKey(User)
 	name = models.CharField(max_length=20,unique=True)
 	created = models.DateTimeField(auto_now_add=True)
@@ -571,10 +584,16 @@ class Character(models.Model):
 		return {'odds': odds, 'weapon': weapon}
 	def max_health(self):
 		# Need to figure out how to grow this...
-		best_stat = CharacterStat.objects.all().order_by('-value')[0]
-		return level_from_value(best_stat.value)
+		amount = 0
+		stats = CharacterStat.objects.filter(character=self, stat__type=Stat.TYPE_SKILL).order_by('-value')
+		if stats:
+			best_stat = stats[0]
+			amount = level_from_value(best_stat.value)
+		if amount < 10:
+			amount = 10
+		return amount
 	def level(self):
-		best_stat = CharacterStat.objects.all().order_by('-value')[0]
+		best_stat = CharacterStat.objects.filter(character=self, stat__type=Stat.TYPE_SKILL).order_by('-value')[0]
 		return level_from_value(best_stat.value)
 	def update_with_result(self, result, pre_reqs, battle, block_death):
 		changes = list()
@@ -639,9 +658,9 @@ class Character(models.Model):
 			change.old = self.money
 			self.money += outcome.amount
 			if outcome.amount == 1:
-				change.name = "Royal"
+				change.name = "royal"
 			else:
-				change.name = "Royals"
+				change.name = "royals"
 			# If we hit this test, we probably accidentally made the result amount bigger than the choice amount.
 			if (self.money < 0):
 				self.money = 0

@@ -21,14 +21,15 @@
 {% block content%}
 {% if scenarios %}
 	{% for scenario in scenarios %}
-	<h2><a href="/lok/scenario/{{scenario.id}}">{{scenario.title|macro:character}}</a></h2>
-	<p>{{scenario.description|macro:character}}</p>
+	<h2>{{scenario.title|macro:character|safe}}</h2>
+	<p>{{scenario.description|safe|macro:character|linebreaksbr}}</p>
+	<div><a href="/lok/scenario/{{scenario.id}}"><input type="submit" class="button" value="Proceed"/></a> </div>
 	{% endfor %}
 {% if character.location.type != 4 %} {#Location.TYPE_NONE #}
 <blockquote>If you don't see anything here that interests you, you can <a href="/lok/rest/">rest</a> for the day and see if anything changes.</blockquote>
 {% endif %}
 {% else %}
-	<p>Whoops! There should be some stories here for you. Sorry about that, please check back soon!</p>
+<p>No scenarios are currently available in this location. You can try traveling somewhere else.</p>
 {% endif %}
 {% endblock content %}
 {% endautoescape %}

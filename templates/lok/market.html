@@ -1,14 +1,19 @@
-<html>
-<head>
-<title>Market</title>
-<body>
+{% extends "lok/base.html" %}
 {% autoescape off %}
-<p>You have {{royals}} royals to spend.</p>
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}{{character.location.name}}'s Market{%endblock %}
+{% block menu_market%}#404040;{% endblock %}
+{% block intro %}
+<p>You have {{royals}} royal{{royals|pluralize}} to spend.</p>
+{% endblock %}
+
+{% block content %}
 {% if not sellable_items and not buyable_items %}
-<p>No items are currently available to buy or to sell. Please try back later.</p>
+<p>No items are currently available to buy or to sell in this location. Please check back after you travel to another location or gain some items to sell.</p>
 {% endif %}
 {% if buyable_items %}
-<p>Would you like to buy any of these?<p>
+<h2>Would you like to buy any of these?</h2>
 <ul>
 {% for item in buyable_items %}
 <li>{{item.name}}: {{item.price}} royals. 
@@ -20,34 +25,37 @@
 {% endfor %}
 <form method="post" action="/lok/buy/{{item.id}}/1/">
 {% csrf_token %}
-	<input type="submit" value="Buy one"/> 
+	<input class="button" type="submit" value="Buy one"/> 
 </form>
 </li>
 {% endfor %}
 </ul>
 {% endif %}
 {% if sellable_items %}
-<p>Would you like to sell any of these?</p>
+<h2>Would you like to sell any of these?</h2>
 <ul>
 {% for item in sellable_items %}
 <li>{{item.name}}: {{item.price}} royals. (You have {{item.quantity}})
 {% for stat in item.stats %}
 (+{{stat.amount}} {{stat.stat.name}})
 {% endfor %}
+<span class="spanFormat">
 <form method="post" action="/lok/sell/{{item.id}}/1/">
 {% csrf_token %}
-	<input type="submit" value="Sell one"/> 
+	<input class="button" type="submit" name="sell_one" value="Sell one"/> 
 </form>
+</span>
 {% if item.quantity > 1 %}
+<span class="spanFormat">
 <form method="post" action="/lok/sell/{{item.id}}/all/">
 {% csrf_token %}
-	<input type="submit" value="Sell all"/> 
+	<input class="button" type="submit" name="sell_all" value="Sell all"/> 
 </form>
+</span>
 {% endif %}
 </li>
 {% endfor %}
 </ul>
 {% endif %}
+{% endblock content %}
 {% endautoescape %}
-</body>
-</html>

@@ -143,7 +143,8 @@ padding : 10px;
 
 a:link, a:visited {
 font-size: .9em;
-color : #000;
+/*color : #000;*/
+color: #AC7D39;
 background : inherit;
 text-decoration : none;
 }
@@ -224,6 +225,12 @@ font-weight : bold;
 font-style : italic;
 color : #AC7D39;
 }
+blockquote a:link, blockquote a:visited {
+font-size: .9em;
+color : #000;
+background : inherit;
+text-decoration : none;
+}
 .search { 
 background: #E4DCB2; 
 color: #000;
@@ -262,3 +269,14 @@ input.login {
 	background: url(images/logininput.gif); 
 	padding: 4px; 
 }
+
+/* Chris's new styles start here... */
+
+.spanFormat
+{
+  text-align: left;
+  display: table-cell;
+  min-width: 10px;
+  padding-right: 10px;
+}
+

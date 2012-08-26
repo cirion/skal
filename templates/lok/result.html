@@ -1,15 +1,24 @@
-{% load lok_extras %}
-<html>
-<body>
+{% extends "lok/base.html" %}
 {% autoescape off %}
-{% if result %}
-<h1>{{result.title|macro:character}}</h1>
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}{{result.title|macro:character}}{%endblock %}
+{% block menu_story%}#404040;{% endblock %}
+{% block intro %}
+{% endblock %}
+
+{% block content %}
+{% if scenario.portrait %}
+<p align="center"><img src="{{scenario.portrait.scaled.url}}" /></p>
+{% endif %}
 <p>{{result.description|linebreaksbr|macro:character}}</p>
 	{% if changes %}
 <ul>
 		{% for change in changes %}
 			{% if change.type == 2 %}
 	<li>{{change.name}} has increased to level {{change.new}}!</li>
+			{% elif change.type == 3 and change.amount < 0 %}
+	<li>You lost {% widthratio -1 1 change.amount%} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 3 %}
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 and change.old == 0 %}
@@ -37,10 +46,6 @@
 		{% endfor %}
 </ul>
 	{% endif %}
-<a href="/lok/story/"><p>Carry on, then.</p></a>
-{% else %}
-<p>Yikes, how did you get here? You aren't supposed to be able to get here. There must be some mistake. I'm sorry. Please visit us again later.</p>
-{% endif %}
+<blockquote><p>I see! <a href="/lok/story/">Carry on, then.</p></a></blockquote>
+{% endblock %}
 {% endautoescape %}
-</body>
-</html>

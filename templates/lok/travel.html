@@ -1,8 +1,15 @@
-<html>
-<body>
+{% extends "lok/base.html" %}
 {% autoescape off %}
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Travel from {{character.location.name}}{%endblock %}
+{% block menu_travel%}#404040;{% endblock %}
+{% block intro %}
+{% endblock %}
+
+{% block content %}
 {% if not routes %}
-<p>No exit from this location is available at this time. Don't worry, though! Continue with your story, and a solution will present itself.</p>
+<blockquote>No exit from this location is available at this time. Don't worry, though! Continue with your story, and a solution will present itself.</blockquote>
 {% else %}
 <p>Please choose one of the following travel options.</p>
 <ul>
@@ -11,6 +18,5 @@
 	{% endfor %}
 </ul>
 {% endif %}
+{% endblock content %}
 {% endautoescape %}
-</body>
-</html>

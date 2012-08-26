@@ -114,7 +114,7 @@ def market(request):
 			if (CharacterItem.objects.filter(character=current_character, item=item.item)):
 				details['quantity'] = CharacterItem.objects.get(character=current_character, item=item.item).quantity
 			buyable_items.append(details)
-	return render_to_response('lok/market.html', {'royals': current_character.money, 'sellable_items': sale_items, 'buyable_items': buyable_items }, context_instance=RequestContext(request))
+	return render_to_response('lok/market.html', {'character': current_character, 'royals': current_character.money, 'sellable_items': sale_items, 'buyable_items': buyable_items }, context_instance=RequestContext(request))
 
 def get_routes(current_character):
 	routes = list(LocationRoute.objects.filter(origin = current_character.location))

@@ -7,7 +7,7 @@
 {% block intro %}
 {% if changes %}
 {# I would love to replace this with more flavorful text. Maybe semi-randomize it. A few sentences of prose describing HOW you won. #}
-<p>You {% if changes.0.name == "Victory!" %}defeated{%else%}lost to{%endif%} {{ changes.1.name }} using your {{ changes.2.name }}.</p>
+<p>You {% if changes.0.name == "Victory!" %}defeated{%else%}lost to{%endif%} {{ changes.1.name }} using your {% if changes.2.name%}{{ changes.2.name }} {% else %}bare hands{% endif %}.</p>
 {% endif %}
 {% endblock %}
 
@@ -23,12 +23,14 @@
 			{% endif %}
 			{% if change.type == 2 %}
 	<li>{{change.name}} has increased to level {{change.new}}!</li>
+			{% elif change.type == 3 and change.amount < 0 %}
+	<li>You lost {% widthratio -1 1 change.amount%} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 3 %}
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 and change.old == 0 %}
 	<li>You now have {{change.new}} {{change.name}}.</li>
 			{% elif change.type == 5 %}
-	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
+	<li>You gained {{change.amount}} {{change.name}}{{change.amount|pluralize}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 1 %}
 	<li>{{change.name}} has increased by {{change.amount}} points.</li>
 			{% elif change.type == 6 and change.amount < 0 %}
@@ -39,6 +41,6 @@
 		{% endfor %}
 </ul>
 {% endif %}
-<blockquote><a href="/lok/story/">Carry On</a></blockquote>
+<div><a href="/lok/story/"><input type="submit" class="button" value="Carry On"/></a> </div>
 {% endblock content %}
 {% endautoescape %}

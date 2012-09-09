@@ -2,7 +2,7 @@
 {% autoescape off %}
 {% load lok_extras %}
 {% block title%}Skal{% endblock %}
-{% block heading%}{{result.title|macro:character}}{%endblock %}
+{% block heading%}{{result.title|safe|macro:character}}{%endblock %}
 {% block menu_story%}#404040;{% endblock %}
 {% block intro %}
 {% endblock %}
@@ -22,7 +22,7 @@
 {% endif %}
 </div>
 {% endif %}
-<p>{{result.description|linebreaksbr|macro:character}}</p>
+<p>{{result.description|safe|linebreaksbr|macro:character}}</p>
 	{% if changes %}
 <ul>
 		{% for change in changes %}
@@ -38,11 +38,11 @@
 	<li>You lost your {{change.name|lower}}{{change.old|pluralize}}.</li>
 			{% elif change.type == 5  and change.amount < 0 %}
 {# Using widthratio is a bizarre but approved way to do math in a django template. #}
-	<li>You lost {%widthratio -1 1 change.amount%} {{change.name|lower}}, for a new total of {{change.new}}.</li>
+	<li>You lost {%widthratio -1 1 change.amount%} {{change.name|lower}}{{change.amount|pluralize}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 %}
 	<li>You gained {{change.amount}} {{change.name|lower}}{{change.amount|pluralize}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 1 %}
-	<li>{{change.name}} has increased by {{change.amount}} point{{change.amount|pluralize}}.</li>
+	<li>{{change.name}} has increased by {{change.amount}} point{{change.amount|pluralize}}. You need {{change.old}} more point{{change.old|pluralize}} to reach level {{change.new}}.</li>
 			{% elif change.type == 6 and change.amount < 0 %}
 	<li>Your health has dropped from {{change.old}} to {{change.new}}.</li>
 			{% elif change.type == 6 %}

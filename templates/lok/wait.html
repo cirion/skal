@@ -1,7 +1,13 @@
-<html>
-<body>
-<h1>Give it some time...</h1>
+{% extends "lok/base.html" %}
+
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}Give it some time...{% endblock %}
+{% block menu_story%}#404040;{% endblock %}
+
+{% block intro %}
 <p>Sorry! You don't have a blank page to tell that part of the story just yet. A fresh page will be added in {{time}} seconds.</p>
-<p><a href="/lok/story/">Return to the story</a></p>
-</body>
-</html>
+{% endblock intro %}
+{% block content %}
+<div><a href="/lok/story/"><input type="submit" class="button" value="Return"/></a> </div>
+{% endblock content %}

@@ -336,19 +336,20 @@ class ChoiceStatPreReq(models.Model):
 	visible = models.BooleanField(default=True)
 	def __unicode__(self):
 		return str(self.stat)
-	def challenge(self, character):
+	def odds(self, character):
 		try:
 			value = CharacterStat.objects.get(character=character, stat = self.stat).level()
 		except CharacterStat.DoesNotExist:
 			value = 0
 		value += character.stat_bonus(self.stat)
-		print "Have " + str(value) + ", need " + str(self.maximum)
+		#print "Have " + str(value) + ", need " + str(self.maximum)
 		if value >= self.maximum:
-			return True
+			return 1
 		# Our odds of success are our progress between minimum and maximum.
 		odds = float(value - self.minimum + 1) / float(self.maximum - self.minimum + 1)
-		print "Our odds are " + str(odds)
-		return random.random() < odds
+		return odds
+	def challenge(self, character):
+		return random.random() < self.odds(character)
 
 class ChoiceItemPreReq(models.Model):
 	choice = models.ForeignKey(Choice)
@@ -474,6 +475,17 @@ class RouteToll(RouteOption):
 	def summary(self):
 		return self.description + " The fee is " + str(self.amount) + " royals."
 
+class Title(models.Model):
+	raw_title_male = models.CharField(max_length=100)
+	raw_title_female = models.CharField(max_length=100)
+	def __unicode__(self):
+		return self.raw_title_male + "/" + self.raw_title_female
+	def title(self, character):
+		if character.gender == Character.GENDER_FEMALE:
+			return self.raw_title_female.replace("#NAME#", character.name)
+		else:
+			return self.raw_title_male.replace("#NAME#", character.name)
+
 class Character(models.Model):
 	GENDER_FEMALE = 1
 	GENDER_MALE = 2
@@ -505,11 +517,14 @@ class Character(models.Model):
 	ring = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_RING}, null=True, blank=True, related_name='+')
 	neck = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_NECK}, null=True, blank=True, related_name='+')
 	armor = models.ForeignKey('Equipment', limit_choices_to={'type': Equipment.TYPE_ARMOR}, null=True, blank=True, related_name='+')
+	active_title = models.ForeignKey(Title, null=True, blank=True)
 	def __unicode__(self):
 		return self.name
 	def title_name(self):
-		# Eventually, this should look at gender, achivements, renown, etc., and give an appropriate prefix to everything.
-		return self.name
+		if self.active_title:
+			return self.active_title.title(self)
+		else:
+			return self.name
 	def stat_bonus(self, stat):
 		bonus = 0
 		bonus += get_stat_bonus(self.sword, stat)
@@ -643,13 +658,15 @@ class Character(models.Model):
 				else:
 					stat.value += outcome.amount
 				change.amount = stat.value - oldvalue
-				change.new = stat.value
 				newlevel = level_from_value(stat.value)
 				if oldlevel != newlevel:
 					change.type = Change.TYPE_LEVEL
 					change.old = oldlevel
 					change.new = newlevel
 					change.amount = newlevel - oldlevel
+				else:
+					change.old = value_from_level(oldlevel + 1) - stat.value
+					change.new = oldlevel + 1
 				changes.append(change)
 				stat.save()
 
@@ -675,9 +692,11 @@ class Character(models.Model):
 			change.name = outcome.item.name
 			item, created = CharacterItem.objects.get_or_create(character=self, item=outcome.item)
 			change.old = item.quantity
-			change.amount = outcome.amount
 			item.quantity += outcome.amount
+			if item.quantity < 0:
+				item.quantity = 0
 			change.new = item.quantity
+			change.amount = change.new - change.old
 			item.save()
 			changes.append(change)
 
@@ -783,6 +802,12 @@ class CharacterLocationAvailable(models.Model):
 	location = models.ForeignKey(Location)
 	def __unicode__(self):
 		return self.location.name
+
+class CharacterTitle(models.Model):
+	character = models.ForeignKey(Character)
+	title = models.ForeignKey(Title)
+	def __unicode__(self):
+		return self.title.title(self.character)
 
 class CharacterStat(models.Model):
 	character = models.ForeignKey(Character)

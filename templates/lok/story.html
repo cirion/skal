@@ -24,7 +24,7 @@
 {% block content%}
 {% if scenarios %}
 	{% for scenario in scenarios %}
-	<h2>{{scenario.title|macro:character|safe}}</h2>
+	<h2>{{scenario.title|capfirst|macro:character|safe}}</h2>
 	<p>{{scenario.description|safe|macro:character|linebreaksbr}}</p>
 	<div><a href="/lok/scenario/{{scenario.id}}"><input type="submit" class="button" value="Proceed"/></a> </div>
 	{% endfor %}

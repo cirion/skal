@@ -2,7 +2,7 @@
 {% autoescape off %}
 {% load lok_extras %}
 {% block title%}Skal{% endblock %}
-{% block heading%}{{character.location.name}}'s Market{%endblock %}
+{% block heading%}{{character.location.name|capfirst}}'s Market{%endblock %}
 {% block menu_market%}#404040;{% endblock %}
 {% block intro %}
 <p>You have {{royals}} royal{{royals|pluralize}} to spend.</p>

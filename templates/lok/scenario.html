@@ -2,7 +2,7 @@
 {% autoescape off %}
 {% load lok_extras %}
 {% block title%}Skal{% endblock %}
-{% block heading%}{{scenario.title|macro:character}}{%endblock %}
+{% block heading%}{{scenario.title|safe|macro:character}}{%endblock %}
 {% block menu_story%}#404040;{% endblock %}
 {% block intro %}
 {% if scenario.portrait %}
@@ -13,8 +13,8 @@
 {% block content %}
 {% if scenario %}
 	{% for choice in choices %}
-<h2>{{choice.title|macro:character}}</h2>
-<p>{{choice.description|macro:character}}</p>
+<h2>{{choice.title|safe|macro:character}}</h2>
+<p>{{choice.description|safe|macro:character}}</p>
 		{% if choice.required_stats %}
 <p><em>This choice requires the following stats: <br/>
 			{% for stat in choice.required_stats %}
@@ -36,6 +36,7 @@ Need at least {{item.minimum}} {{item.item.name}}{{item.minimum|pluralize}}.<br/
 		{% endif %}
 </em>
 		{% if not choice.invalid %}
+		{% if choice.odds_pct %}<p>Your odds of success here are about {{choice.odds_pct}}%</p>{% endif %}
 <form method="post" action="/lok/choice/{{choice.id}}/">
 {% csrf_token %}
 	<input class="button" type="submit" value="Choose This"/> 

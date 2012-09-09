@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import re
 import bisect
 from django.utils.timezone import utc
 from django.http import HttpResponse, HttpResponseRedirect
@@ -9,7 +10,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
 from django.core.mail import send_mail, EmailMessage
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription, Title, CharacterTitle
 import random
 from random import Random
 from lok.utils import level_from_value as level_from_value
@@ -19,8 +20,11 @@ from lok.forms import ContactForm
 def create_character(request):
 	if (request.POST):
 		name = request.POST['name']
-		if Character.objects.filter(name=name).exists():
-			return render_to_responds('lok/create_character.html', {'error': "Sorry, that name is already taken."})
+		name = name.capitalize()
+		if Character.objects.filter(name = name):
+			return render_to_response('lok/create_character.html', {'error': "Sorry, that name is already taken."}, context_instance=RequestContext(request))
+		if not re.match("[a-zA-Z]+$", name):
+			return render_to_response('lok/create_character.html', {'error': "Please choose a name without any spaces, numbers, or special characters."}, context_instance=RequestContext(request))
 		character = Character()
 		character.name = name
 		character.player = request.user
@@ -40,6 +44,7 @@ def dead(request):
 @login_required
 def character(request):
 	current_character = Character.objects.get(player=request.user.id)
+	titles = CharacterTitle.objects.filter(character = current_character)
 	skills = CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_SKILL, value__gte = 10)
 	for skill in skills:
 		skill.value = level_from_value(skill.value) + current_character.stat_bonus(skill.stat)
@@ -74,7 +79,7 @@ def character(request):
 	rings = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_RING)
 	neck = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_NECK)
 	armors = CharacterItem.objects.filter(character = current_character, item__equipment__type = Equipment.TYPE_ARMOR)
-	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plot_descriptions, 'achievements': achievements, 'title': title, 'swords': swords, 'bashing': bashing, 'bows': bows, 'feet': feet, 'cloaks': cloaks, 'clothes': clothes, 'gloves': gloves, 'rings': rings, 'neck': neck, 'armors': armors})
+	return render_to_response('lok/character.html', {'character': current_character, 'skills': skills, 'fame': fame, 'items': items, 'plots': plot_descriptions, 'achievements': achievements, 'title': title, 'swords': swords, 'bashing': bashing, 'bows': bows, 'feet': feet, 'cloaks': cloaks, 'clothes': clothes, 'gloves': gloves, 'rings': rings, 'neck': neck, 'armors': armors, 'esteems': esteems, 'titles': titles})
 
 @login_required
 def story(request):
@@ -107,7 +112,10 @@ def story(request):
 			next_page_time_string = "1 minute " 
 		elif minutes > 1:
 			next_page_time_string = "%s minutes " % (minutes)
-		next_page_time_string = next_page_time_string +  "%s seconds" % (seconds)
+		if seconds == 1:
+			next_page_time_string = next_page_time_string +  "1 second"
+		elif seconds > 1:
+			next_page_time_string = next_page_time_string +  "%s seconds" % (seconds)
 	return render_to_response('lok/story.html', {'routes': routes, 'next_page_time': next_page_time_string, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
 
 @login_required
@@ -182,6 +190,8 @@ def check_auth(request):
 def battle(request, battle_id):
 	battle = Battle.objects.get(pk=battle_id)
 	current_character = Character.objects.get(player=request.user.id)
+	if current_character.actions < 1:
+		return render_to_response('lok/wait.html', {'time': (current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)).seconds})
 	odds_result = current_character.odds_against(battle)
 	odds = odds_result['odds']
 	weapon = odds_result['weapon']
@@ -215,6 +225,8 @@ def battle(request, battle_id):
 def scenario(request, scenario_id):
 	scenario = Scenario.objects.get(pk=scenario_id)
 	current_character = Character.objects.get(player=request.user.id)
+	if not scenario.valid_for(current_character):
+		return HttpResponseRedirect('/lok/story/')
 	try:
 		battle = scenario.battle
 		result = current_character.odds_against(battle)
@@ -230,6 +242,13 @@ def scenario(request, scenario_id):
 					choice.invalid = True
 				choice.required_items = ChoiceItemPreReq.objects.filter(choice=choice.pk)
 				choice.required_stats = ChoiceStatPreReq.objects.filter(choice=choice.pk,minimum__gt=0)
+				challenges = ChoiceStatPreReq.objects.filter(choice=choice.pk)
+				if Result.objects.filter(type=Result.FAILURE, choice=choice):
+					for stat in challenges:
+						odds = int(stat.odds(current_character) * 100)
+						if odds < 100:
+							if not hasattr(choice, 'odds_pct') or odds < choice.odds_pct:
+								choice.odds_pct = odds
 				if (ChoiceMoneyPreReq.objects.filter(choice=choice.pk)):
 					choice.required_money = ChoiceMoneyPreReq.objects.get(choice=choice.pk)
 				final_choices.append(choice)
@@ -283,13 +302,23 @@ def sell(request, item_id, quantity):
 	return HttpResponseRedirect('/lok/market/')
 
 @login_required
+def title(request, title_id):
+	print "Using ID " + str(title_id)
+	current_character = Character.objects.get(player=request.user.id)
+	if not CharacterTitle.objects.filter(character=current_character,title__id=title_id):
+		current_character.active_title=None
+	else:
+		current_character.active_title = Title.objects.get(id=CharacterTitle.objects.get(title__id=title_id).title.id)
+	current_character.save()
+	return HttpResponseRedirect('/lok/character/')
+
+@login_required
 def equip(request, fieldname, equip_id):
 	current_character = Character.objects.get(player=request.user.id)
 	if (not CharacterItem.objects.filter(character=current_character,item__id=equip_id)):
-		return HttpResponseRedirect('/lok/character/')
-	#fieldname = "sword"
-	setattr(current_character, fieldname, Equipment.objects.get(id=equip_id))
-	#current_character.sword = Equipment.objects.get(id=equip_id)
+		setattr(current_character, fieldname, None)
+	else:
+		setattr(current_character, fieldname, Equipment.objects.get(id=equip_id))
 	current_character.save()
 	return HttpResponseRedirect('/lok/character/')
 

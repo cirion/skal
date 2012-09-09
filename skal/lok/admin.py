@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -159,19 +159,27 @@ class ResultAdmin(admin.ModelAdmin):
 
 class CharacterLocationAvailableInline(admin.TabularInline):
 	model = CharacterLocationAvailable
+	extra = 1
+
+class CharacterTitleInline(admin.TabularInline):
+	model = CharacterTitle
+	extra = 1
 
 class CharacterStatInline(admin.TabularInline):
 	model = CharacterStat
+	extra = 1
 
 class CharacterPlotInline(admin.TabularInline):
 	model = CharacterPlot
+	extra = 1
 
 class CharacterItemInline(admin.TabularInline):
 	model = CharacterItem
+	extra = 1
 
 class CharacterAdmin(admin.ModelAdmin):
 	model = Character
-	inlines = [CharacterStatInline, CharacterPlotInline, CharacterItemInline, CharacterLocationAvailableInline]
+	inlines = [CharacterStatInline, CharacterPlotInline, CharacterItemInline, CharacterLocationAvailableInline, CharacterTitleInline]
 
 class StatAdmin(admin.ModelAdmin):
 	model = Stat
@@ -231,6 +239,9 @@ class ImageAdmin(admin.ModelAdmin):
 	admin_thumbnail = AdminThumbnail(image_field='thumbnail')
 	model = Image
 
+class TitleAdmin(admin.ModelAdmin):
+	model = Title
+
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
@@ -248,3 +259,4 @@ admin.site.register(RouteToll, RouteTollAdmin)
 admin.site.register(RouteFree, RouteFreeAdmin)
 admin.site.register(PlotDescription, PlotDescriptionAdmin)
 admin.site.register(Image, ImageAdmin)
+admin.site.register(Title, TitleAdmin)

@@ -18,10 +18,12 @@
 {%for skill in skills %}
 <li>{{skill.stat.name}} is level {{skill.value}}</li>
 {%endfor%}
+{% if esteems %}
 <h2>Reputations</h2>
-{%for esteem in esteem %}
+{%for esteem in esteems %}
 <li>{{esteem.stat.name}} regard you at level {{esteem.value}}</li>
 {%endfor%}
+{% endif %}
 <h2>Items</h2>
 {%for item in items %}
 <li>{{item.quantity}} {{item.item.name}}{{item.quantity|pluralize}}</li>
@@ -32,6 +34,7 @@
 {% endif%}
 {% if swords %}
 <p>You can place any of the following swords in your scabbard.</p>
+<li><a href="/lok/equip/sword/0">Nothing</a></li>
 {% for sword in swords %}
 <li><a href="/lok/equip/sword/{{sword.item.id}}">{{sword.item.name}}</a></li>
 {% endfor %}
@@ -41,6 +44,7 @@
 {% endif%}
 {% if bashing %}
 <p>You can hang any of the following weapons in your beltloop.</p>
+<li><a href="/lok/equip/bashing/0">Nothing</a></li>
 {% for bash in bashing %}
 <li><a href="/lok/equip/bashing/{{bashing.item.id}}">{{bashing.item.name}}</a></li>
 {% endfor %}
@@ -50,6 +54,7 @@
 {% endif%}
 {% if bows %}
 <p>You can sling one of these bows across your back.</p>
+<li><a href="/lok/equip/bow/0">Nothing</a></li>
 {% for bow in bows %}
 <li><a href="/lok/equip/bow/{{bow.item.id}}">{{bow.item.name}}</a></li>
 {% endfor %}
@@ -59,6 +64,7 @@
 {% endif%}
 {% if feet %}
 <p>You can wear a pair of the following on your feet.</p>
+<li><a href="/lok/equip/feet/0">Nothing</a></li>
 {% for foot in feet %}
 <li><a href="/lok/equip/feet/{{foot.item.id}}">{{foot.item.name}}</a></li>
 {% endfor %}
@@ -68,6 +74,7 @@
 {% endif%}
 {% if cloaks %}
 <p>You can wear one of the following cloaks.</p>
+<li><a href="/lok/equip/cloak/0">Nothing</a></li>
 {% for cloak in cloaks %}
 <li><a href="/lok/equip/cloak/{{cloak.item.id}}">{{cloak.item.name}}</a></li>
 {% endfor %}
@@ -77,6 +84,7 @@
 {% endif%}
 {% if clothes %}
 <p>You can wear one of the following sets of clothing.</p>
+<li><a href="/lok/equip/clothing/0">Standard tunic</a></li>
 {% for clothing in clothes%}
 <li><a href="/lok/equip/clothing/{{clothing.item.id}}">{{clothing.item.name}}</a></li>
 {% endfor %}
@@ -86,6 +94,7 @@
 {% endif%}
 {% if gloves %}
 <p>You can wear one of these pairs on your hands.</p>
+<li><a href="/lok/equip/gloves/0">Nothing</a></li>
 {% for glove in gloves %}
 <li><a href="/lok/equip/gloves/{{glove.item.id}}">{{glove.item.name}}</a></li>
 {% endfor %}
@@ -95,6 +104,7 @@
 {% endif%}
 {% if rings %}
 <p>You can feature one of these rings on your right ring finger.</p>
+<li><a href="/lok/equip/ring/0">Nothing</a></li>
 {% for ring in rings %}
 <li><a href="/lok/equip/ring/{{ring.item.id}}">{{ring.item.name}}</a></li>
 {% endfor %}
@@ -104,6 +114,7 @@
 {% endif%}
 {% if neck %}
 <p>You can wear one of the following items around your neck.</p>
+<li><a href="/lok/equip/neck/0">Nothing</a></li>
 {% for necklace in neck %}
 <li><a href="/lok/equip/neck/{{necklace.item.id}}">{{necklace.item.name}}</a></li>
 {% endfor %}
@@ -113,6 +124,7 @@
 {% endif%}
 {% if armors %}
 <p>You can wear one of these sets of armor as an outer layer.</p>
+<li><a href="/lok/equip/armor/0">Nothing</a></li>
 {% for armor in armors %}
 <li><a href="/lok/equip/armor/{{armor.item.id}}">{{armor.item.name}}</a></li>
 {% endfor %}
@@ -131,6 +143,16 @@
 {% for achievement in achievements %}
 <li>{{achievement.plot.description}}</li>
 {% endfor %}
+{% endif %}
+{% if titles %}
+<h2>Titles</h2>
+<p>You have earned the rights to the following titles. By what name should you be known?</p>
+<ul>
+<li><a href="/lok/title/0">{{character.name}}</a></li>
+{% for title in titles %}
+<li><a href="/lok/title/{{title.id}}">{{title}}</a></li>
+{% endfor %}
+</ul>
 {% endif %}
 </ul>
 {% endblock content %}

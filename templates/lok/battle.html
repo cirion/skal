@@ -2,7 +2,7 @@
 {% autoescape off %}
 {% load lok_extras %}
 {% block title%}Skal{% endblock %}
-{% block heading%}{{battle.title|macro:character}}{% endblock %}
+{% block heading%}{{battle.title|capfirst|macro:character}}{% endblock %}
 {% block menu_story%}#404040;{% endblock %}
 {% block intro %}
 <p>{{battle.description|macro:character}}</p>

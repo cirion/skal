@@ -16,7 +16,7 @@
 <h2>Would you like to buy any of these?</h2>
 <ul>
 {% for item in buyable_items %}
-<li>{{item.name}}: {{item.price}} royals. 
+<li>{{item.name|capfirst}}: {{item.price}} royals. 
 {% if item.quantity > 0 %}
 (You have {{item.quantity}})
 {% endif %}
@@ -35,7 +35,7 @@
 <h2>Would you like to sell any of these?</h2>
 <ul>
 {% for item in sellable_items %}
-<li>{{item.name}}: {{item.price}} royals. (You have {{item.quantity}})
+<li>{{item.name|capfirst}}: {{item.price}} royals. (You have {{item.quantity}})
 {% for stat in item.stats %}
 (+{{stat.amount}} {{stat.stat.name}})
 {% endfor %}

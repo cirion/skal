@@ -33,7 +33,7 @@
 			{% elif change.type == 3 %}
 	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 5 and change.old == 0 %}
-	<li>You now have {{change.new}} {{change.name|lower}}{{change.new|pluralize}}.</li>
+	<li>You now have {{change.new}} {{change.name}}{{change.new|pluralize}}.</li>
 			{% elif change.type == 5  and change.amount < 0 and change.new == 0%}
 	<li>You lost your {{change.name|lower}}{{change.old|pluralize}}.</li>
 			{% elif change.type == 5  and change.amount < 0 %}
@@ -50,6 +50,9 @@
 			{% endif %}
 			{% if change.type == 13 %}
 	<li>You have learned the way to {{change.name}} and can travel there in the future.</li>
+			{% endif %}
+			{% if change.type == 4 %}
+	<li>You have a new achievement! {{change.name}}</li>
 			{% endif %}
 			{% if change.type == 14 %}
 	<li>You are now in {{change.name}}.</li>

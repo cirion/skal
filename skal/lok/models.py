@@ -780,12 +780,13 @@ class Character(models.Model):
 		plot_outcomes = PlotOutcome.objects.filter(result = result.pk)
 		for outcome in plot_outcomes:
 			change = Change(type = Change.TYPE_PLOT)
-			change.name = outcome.plot.name
+			change.name = outcome.plot.description
 			plot, created = CharacterPlot.objects.get_or_create(character = self, plot = outcome.plot)
 			change.new = outcome.value
 			plot.value = outcome.value
 			plot.save()
-			changes.append(change)
+			if plot.plot.achievement:
+				changes.append(change)
 
 		location_learn_outcomes = LearnLocationOutcome.objects.filter(choice = result.pk)
 		for outcome in location_learn_outcomes:

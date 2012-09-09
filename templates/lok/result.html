@@ -26,7 +26,7 @@
 	{% if changes %}
 <ul>
 		{% for change in changes %}
-			{% if change.type == 2 %}
+			{% if change.type == 2 and change.amount > 0%}
 	<li>{{change.name}} has increased to level {{change.new}}!</li>
 			{% elif change.type == 3 and change.amount < 0 %}
 	<li>You lost {% widthratio -1 1 change.amount%} {{change.name}}, for a new total of {{change.new}}.</li>

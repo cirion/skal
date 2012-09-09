@@ -20,6 +20,7 @@ urlpatterns = patterns('lok.views',
 	url(r'^result/(?P<result_id>\d+)/$', 'result'),
 	url(r'^battle_result/(?P<result_id>\d+)/$', 'battle_result'),
 	url(r'^contact/$', 'contact'),
+	url(r'^logout/$', 'logout_view'),
 	url(r'^thanks/$', 'thanks'),
 )
 

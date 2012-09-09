@@ -15,6 +15,7 @@ import random
 from random import Random
 from lok.utils import level_from_value as level_from_value
 from lok.forms import ContactForm
+from django.contrib.auth import logout
 
 @login_required
 def create_character(request):
@@ -30,7 +31,8 @@ def create_character(request):
 		character.player = request.user
 		character.money = 0
 		character.gender = request.POST['gender']
-		character.location = Location.objects.get(name="Your Childhood Home")
+		character.contact = request.POST['contact']
+		character.location = Location.objects.get(name="your childhood home")
 		character.refill_time = datetime.utcnow().replace(tzinfo=utc)
 		character.current_health = character.max_health()
 		character.save()
@@ -57,7 +59,8 @@ def character(request):
 		if PlotDescription.objects.filter(plot = plot.plot.pk, value = plot.value):
 			print "Got a match."
 			plot_descriptions.append(PlotDescription.objects.get(plot=plot.plot, value=plot.value))
-	achievements = CharacterPlot.objects.filter(character = current_character, plot__achievement = True)
+	achievements = list(CharacterPlot.objects.filter(character = current_character, plot__achievement = True))
+	achievements.reverse()
 	items = CharacterItem.objects.filter(character = current_character, quantity__gt = 0)
 	fame = 0
 	if CharacterStat.objects.filter(character = current_character, stat__type= Stat.TYPE_FAME):
@@ -456,4 +459,6 @@ def rest(request):
 	current_character.rest()
 	return render_to_response('lok/rest.html', {})
 	
-
+def logout_view(request):
+	logout(request)
+	return HttpResponseRedirect('/lok/story/')

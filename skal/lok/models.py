@@ -493,10 +493,17 @@ class Character(models.Model):
 		(GENDER_FEMALE, "Female"),
 		(GENDER_MALE, "Male"),
 	)
+	CONTACT_YES = 2
+	CONTACT_NO = 1
+	CONTACT_CHOICES = (
+		(CONTACT_YES, "Yes"),
+		(CONTACT_NO, "No"),
+	)
 	MAX_ACTIONS = 20
 	ACTION_RECHARGE_TIME_SECS = 900
 	#ACTION_RECHARGE_TIME_SECS = 30
 	player = models.ForeignKey(User)
+	contact = models.IntegerField(choices=CONTACT_CHOICES, default=CONTACT_YES)
 	name = models.CharField(max_length=20,unique=True)
 	created = models.DateTimeField(auto_now_add=True)
 	money = models.IntegerField(default=0)
@@ -657,6 +664,8 @@ class Character(models.Model):
 					stat.value += 1
 				else:
 					stat.value += outcome.amount
+				if stat.value < 0:
+					stat.value = 0
 				change.amount = stat.value - oldvalue
 				newlevel = level_from_value(stat.value)
 				if oldlevel != newlevel:

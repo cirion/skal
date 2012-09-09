@@ -194,7 +194,7 @@ class EquipmentStatInline(admin.TabularInline):
 
 class EquipmentAdmin(admin.ModelAdmin):
 	model = Equipment
-	inlines = [EquipmentStatInline]
+	inlines = [EquipmentStatInline,ItemLocationInline]
 	def add_view(self, request, form_url="", extra_context=None):
         	data = request.GET.copy()
         	data['multiple'] = False

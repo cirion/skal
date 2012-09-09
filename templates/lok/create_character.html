@@ -15,6 +15,7 @@
 {% csrf_token %}
 	<label for="name">What is your character's name?</label><br/>
 	<input type="text" name="name" /> <br/>
+	<br/>
 	<label for="male">What is your character's gender?</label></br/>
 	<label for="male">
 	<input type="radio" id="male" name="gender" value="2" /> Male<br />
@@ -22,6 +23,15 @@
 	<label for="female">
 	<input type="radio" id="female" name="gender" value="1" checked="checked" /> Female<br />
 	</label>
+	<br/>
+	<label for="yes">Is it OK if we send you an occasional email update about Skal? It should be less than once a month, and we'll never give your address to anyone else. You can opt out at any time.</label><br/>
+	<label for="yes">
+	<input type="radio" id="yes" name="contact" value="2" /> Sure.<br />
+	</label>
+	<label for="no">
+	<input type="radio" id="no" name="contact" value="1" checked="checked" /> No, only use my email for password resets.<br />
+	</label>
+	<br/>
 	<input class="button" type="submit" value="Be Born"/> 
 </form>
 {% endblock %}

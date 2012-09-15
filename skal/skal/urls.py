@@ -16,6 +16,7 @@ urlpatterns = patterns('',
 	url(r'^accounts/', include('registration.backends.default.urls')),
 	#url(r'^login/$', 'django.contrib.auth.views.login'),
 	url(r'^lok/', include('lok.urls')),
+	url(r'^friends/', include('friends.urls')),
 	url(r'^$', RedirectView.as_view(url='/lok/story/')),
 )
 if settings.DEBUG:	

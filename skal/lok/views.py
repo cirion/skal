@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+import friends
+from friends.models import FriendshipRequest, Friendship
 import re
 import bisect
 from django.utils.timezone import utc
@@ -10,12 +12,13 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
 from django.core.mail import send_mail, EmailMessage
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription, Title, CharacterTitle
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription, Title, CharacterTitle, Party, PartyInvite
 import random
 from random import Random
 from lok.utils import level_from_value as level_from_value
 from lok.forms import ContactForm
 from django.contrib.auth import logout
+from django.contrib.auth.models import User
 
 @login_required
 def create_character(request):
@@ -26,7 +29,10 @@ def create_character(request):
 			return render_to_response('lok/create_character.html', {'error': "Sorry, that name is already taken."}, context_instance=RequestContext(request))
 		if not re.match("[a-zA-Z]+$", name):
 			return render_to_response('lok/create_character.html', {'error': "Please choose a name without any spaces, numbers, or special characters."}, context_instance=RequestContext(request))
+		party = Party()
+		party.save()
 		character = Character()
+		character.party = party
 		character.name = name
 		character.player = request.user
 		character.money = 0
@@ -120,6 +126,115 @@ def story(request):
 		elif seconds > 1:
 			next_page_time_string = next_page_time_string +  "%s seconds" % (seconds)
 	return render_to_response('lok/story.html', {'routes': routes, 'next_page_time': next_page_time_string, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
+
+@login_required
+def party(request):
+	current_character = Character.objects.get(player=request.user.id)
+	friend_users = Friendship.objects.friends_of(request.user)
+	msg = message = None
+	if request.GET:
+		msg = request.GET['msg']
+	friends = list()
+	for friend in friend_users:
+		if friend != request.user:
+			friends.append(Character.objects.get(player=friend))
+	sent_invites_users = FriendshipRequest.objects.filter(from_user=current_character.player)
+	sent_invites = list()
+	for sent_invite in sent_invites_users:
+		sent_invites.append(Character.objects.get(player = sent_invite.to_user))
+	received_invites_users = FriendshipRequest.objects.filter(to_user=current_character.player)
+	received_invites = list()
+	for received_invite in received_invites_users:
+		received_invites.append(Character.objects.get(player=received_invite.from_user))
+	if msg == 'notfound':
+		message = "Sorry, we couldn't find anyone by that name. Please try again with their character's name, username, or an email address."
+	elif msg == 'pending':
+		message = "You have already sent them an invitation. Let's hope they accept soon!"
+	elif msg == 'sent':
+		message = "Your invitation has been sent. Please await a reply."
+	if current_character.party and current_character.party.size() < current_character.party.max_size():
+		party_room = current_character.party.max_size() - current_character.party.size()
+	elif not current_character.party:
+		party_room = current_character.max_party_size()
+	else:
+		party_room = 0
+	party_invites = PartyInvite.objects.filter(to_character=current_character)
+	party_invites_sent = PartyInvite.objects.filter(from_character=current_character)
+	party_room -= party_invites_sent.count()
+	if party_room < 0:
+		party_room = 0
+	return render_to_response('lok/party.html', {'party_room': party_room, 'message': message, 'character': current_character, 'party_invites': party_invites, 'party_invites_sent': party_invites_sent, 'friends': friends, 'sent_invites': sent_invites, 'received_invites': received_invites}, context_instance=RequestContext(request))
+
+@login_required
+def invite_party(request, character_id):
+	current_character = Character.objects.get(player=request.user.id)
+	invited = Character.objects.get(pk=character_id)
+	if not PartyInvite.objects.filter(from_character=current_character, to_character=invited):
+		invite = PartyInvite(from_character=current_character, to_character=invited,party=current_character.party)
+		invite.save()
+	return HttpResponseRedirect('/lok/party/')
+
+@login_required
+def leave_party(request):
+	current_character = Character.objects.get(player=request.user.id)
+	party = Party()
+	party.save()
+	current_character.party = party
+	current_character.save()
+	return HttpResponseRedirect('/lok/party/')
+
+@login_required
+def cancel_invite_party(request, invite_id):
+	PartyInvite.objects.get(pk=invite_id).delete()
+	return HttpResponseRedirect('/lok/party/')
+	
+@login_required
+def accept_party(request, invite_id):
+	current_character = Character.objects.get(player=request.user.id)
+	party = PartyInvite.objects.get(pk=invite_id).party
+	accept = request.GET['accept']
+	if accept == "true" and party.size() < party.max_size():
+		old_party = current_character.party
+		current_character.party = party
+		current_character.save()
+		if old_party.size() == 0:
+			old_party.delete()
+		# Erase any competing invitations received.
+		invites = PartyInvite.objects.filter(to_character=current_character).exclude(id=invite_id)
+		for invite in invites:
+			invite.delete()
+	PartyInvite.objects.get(pk=invite_id).delete()
+	return HttpResponseRedirect('/lok/party/')
+
+@login_required
+def invite_friend(request):
+	name = request.POST['name']
+	current_character = Character.objects.get(player=request.user.id)
+	match = Character.objects.filter(name__iexact=name)
+	if match:
+		match = match[0].player
+	if not match:
+		match = User.objects.filter(username__iexact=name)
+	if not match:
+		match = User.objects.filter(email__iexact=name)
+	if not match:
+		return HttpResponseRedirect('/lok/party?msg=notfound')
+	if FriendshipRequest.objects.filter(from_user=request.user, to_user=match):
+		return HttpResponseRedirect('/lok/party?msg=pending')
+	FriendshipRequest.objects.create(from_user=request.user, to_user=match, message='Care to join?')
+	return HttpResponseRedirect('/lok/party?msg=sent')
+
+@login_required
+def accept_friend(request, user_id):
+	current_character = Character.objects.get(player=request.user.id)
+	accept = request.GET['accept']
+	ask = FriendshipRequest.objects.get(to_user=request.user.id, from_user__pk=user_id)
+	if (accept == "true"):
+		ask.accept()
+	else:
+		ask.decline()
+	ask.delete()
+	return HttpResponseRedirect('/lok/party')
 
 @login_required
 def market(request):

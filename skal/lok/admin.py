@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle, Party, PartyInvite 
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -242,6 +242,12 @@ class ImageAdmin(admin.ModelAdmin):
 class TitleAdmin(admin.ModelAdmin):
 	model = Title
 
+class PartyAdmin(admin.ModelAdmin):
+	model = Party
+
+class PartyInviteAdmin(admin.ModelAdmin):
+	model = PartyInvite
+
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
@@ -260,3 +266,5 @@ admin.site.register(RouteFree, RouteFreeAdmin)
 admin.site.register(PlotDescription, PlotDescriptionAdmin)
 admin.site.register(Image, ImageAdmin)
 admin.site.register(Title, TitleAdmin)
+admin.site.register(Party, PartyAdmin)
+admin.site.register(PartyInvite, PartyInviteAdmin)

@@ -486,6 +486,30 @@ class Title(models.Model):
 		else:
 			return self.raw_title_male.replace("#NAME#", character.name)
 
+class Party(models.Model):
+	def leader(self):
+		members = sorted(Character.objects.filter(party=self), key=lambda a: a.max_party_size)
+		if not members:
+			return None
+		return members[0]
+	def member(self, character):
+		return Character.objects.filter(party=self,pk=character.id).exists()
+	def members(self):
+		return Character.objects.filter(party=self)
+	def size(self):
+		return self.members().count()
+	def max_size(self):
+		size = 1
+		for member in self.members():
+			member_size = member.max_party_size()
+			if member_size > size:
+				size = member_size
+		return size
+	def __unicode__(self):
+		if not self.leader():
+			return "Empty party"
+		return self.leader().title_name() + "'s party"
+
 class Character(models.Model):
 	GENDER_FEMALE = 1
 	GENDER_MALE = 2
@@ -501,8 +525,8 @@ class Character(models.Model):
 	)
 	MAX_ACTIONS = 20
 	ACTION_RECHARGE_TIME_SECS = 900
-	#ACTION_RECHARGE_TIME_SECS = 30
 	player = models.ForeignKey(User)
+	party = models.ForeignKey(Party)
 	contact = models.IntegerField(choices=CONTACT_CHOICES, default=CONTACT_YES)
 	name = models.CharField(max_length=20,unique=True)
 	created = models.DateTimeField(auto_now_add=True)
@@ -532,6 +556,27 @@ class Character(models.Model):
 			return self.active_title.title(self)
 		else:
 			return self.name
+	def max_party_size(self):
+		# I'm gonna play around with this... may also expand based on land ownership, renown, etc.
+		size = 1
+		try:
+			skill_value = CharacterStat.objects.get(character=self, stat__name="Persuasion").level()
+		except CharacterStat.DoesNotExist:
+			skill_value = 0
+		skill_value+= self.stat_bonus(Stat.objects.get(name="Persuasion"))
+		if skill_value > 20:
+			size += 1
+		if skill_value > 40:
+			size += 1
+		if skill_value > 60:
+			size += 1
+		try:
+			renown_value = CharacterStat.objects.get(character=self, stat__name="Renown").level()
+		except CharacterStat.DoesNotExist:
+			renown_value = 0
+		if renown_value > 10:
+			size += 1
+		return size
 	def stat_bonus(self, stat):
 		bonus = 0
 		bonus += get_stat_bonus(self.sword, stat)
@@ -606,7 +651,6 @@ class Character(models.Model):
 			odds = .95
 		return {'odds': odds, 'weapon': weapon}
 	def max_health(self):
-		# Need to figure out how to grow this...
 		amount = 0
 		stats = CharacterStat.objects.filter(character=self, stat__type=Stat.TYPE_SKILL).order_by('-value')
 		if stats:
@@ -668,16 +712,20 @@ class Character(models.Model):
 					stat.value = 0
 				change.amount = stat.value - oldvalue
 				newlevel = level_from_value(stat.value)
+				stat.save()
 				if oldlevel != newlevel:
 					change.type = Change.TYPE_LEVEL
 					change.old = oldlevel
 					change.new = newlevel
 					change.amount = newlevel - oldlevel
+					# ... and give them a free health point if they can use it. Note that we [currently] don't refill all health.
+					if self.current_health < self.max_health():
+						self.current_health += 1
+						self.save()
 				else:
 					change.old = value_from_level(oldlevel + 1) - stat.value
 					change.new = oldlevel + 1
 				changes.append(change)
-				stat.save()
 
 		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
 		for outcome in money_outcomes:
@@ -806,6 +854,13 @@ class Character(models.Model):
 		self.total_choices = self.total_choices + 1
 		self.save()
 		return changes
+
+class PartyInvite(models.Model):
+	from_character = models.ForeignKey(Character, related_name="party_invite_from")
+	to_character = models.ForeignKey(Character, related_name="party_invite_to")
+	party = models.ForeignKey(Party)
+	def __unicode__(self):
+		return "Invite from " + self.from_character.name + " to " + self.to_character.name
 
 class CharacterLocationAvailable(models.Model):
 	character = models.ForeignKey(Character)

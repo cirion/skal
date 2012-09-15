@@ -6,7 +6,7 @@ def level_from_value(value):
 	else:
 		temp = value - 100
 		level = 10
-		while (temp > 0):
+		while (temp > level):
 			level += 1
 			temp -= level
 		return level

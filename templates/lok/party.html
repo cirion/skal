@@ -1,0 +1,84 @@
+{% extends "lok/base.html" %}
+{% autoescape off %}
+{% load lok_extras %}
+{% block title%}Skal{% endblock %}
+{% block heading%}{{character.title_name|capfirst}}'s Party{%endblock %}
+{% block menu_party%}#404040;{% endblock %}
+{% block intro %}
+{% if message %} {{message}} {% endif %}
+{% endblock %}
+
+{% block content %}
+{% if character.party.members.count > 1 %}
+<p>You are traveling with the following people.</p>
+<ul>
+{% for member in character.party.members %}
+{% if member != character %}
+<li>{{member.title_name}}</li>
+{% endif %}
+{% endfor %}
+</ul>
+<p><a href="/lok/leave_party/">Leave party</a></p>
+{% else %}
+<p>You are currently traveling alone.</p>
+{% endif %}
+<p>{% if party_room %}Your party has room for {{party_room}} additional members.{% endif %} You can increase your max party size by increasing your Persuasion or Renown, or by joining a party whose leader has higher Persuasion or Renown.</p>
+
+{% if party_invites %}
+<p>You have received an invitation to join a party:</p>
+<ul>
+{% for party_invite in party_invites %}
+<li>{{party_invite.party}} <a href="/lok/accept_party/{{party_invite.id}}?accept=true">Accept</a> <a href="/lok/accept_party/{{party_invite.id}}?a
+ccept=false">Decline</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if party_invites_sent %}
+<p>You have sent invitations to join your party:</p>
+<ul>
+{% for invite in party_invites_sent %}
+<li>{{invite.to_character}} <a href="/lok/cancel_invite_party/{{invite.id}}/">Rescind</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if friends %}
+<p>You have met the following adventurers.</p>
+<ul>
+{% for friend in friends %}
+<li>{{friend.title_name}} {% if party_room %} <a href="/lok/invite_party/{{friend.id}}/">Invite to join party</a>{% endif %}</li>
+{% endfor %}
+</ul>
+{% else %}
+{% endif %}
+
+<p>Is there anyone you would like to befriend in Skal? Enter their character's name in this box!<br/>
+
+<form method="post" action="/lok/invite_friend/">
+{% csrf_token %}
+	<input type="text" name="name" />
+	<input class="button" type="submit" value="Invite"/> 
+</form>
+</p>
+
+{% if sent_invites %}
+<p>You have invited the following people to join you.</p>
+<ul>
+{% for sent_invite in sent_invites %}
+<li>{{sent_invite.title_name}}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% if received_invites %}
+<p>You have received invitations from the following people.</p>
+<ul>
+{% for received_invite in received_invites %}
+<li>{{received_invite.title_name}} <a href="/lok/accept_friend/{{received_invite.player.id}}?accept=true">Accept</a> <a href="/lok/accept_friend/{{received_invite.player.id}}?accept=false">Decline</a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% endblock content %}
+{% endautoescape %}

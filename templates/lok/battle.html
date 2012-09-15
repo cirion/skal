@@ -10,12 +10,20 @@
 
 {% block content %}
 {% if battle %}
+{% if ally == character %}
 {% if not weapon %}
 <p>You face this enemy using only your fists.</p>
 {% else %}
 <p>You believe your {{weapon}} will be most effective here.</p>
 {% endif %}
-<p>You figure your odds of success are around {{odds}}%</p>
+{% else %}
+{% if not weapon %}
+<p>{{ally.title_name}} will face this enemy using only {{"#HIS_HER"|macro:ally}} fists.</p>
+{% else %}
+<p>You believe that {{ally.title_name}}'s {{weapon}} will be most effective here.</p>
+{% endif %}
+{% endif %}
+<p>You figure your odds of success are around {{odds}}%.</p>
 <form method="post" action="/lok/battle/{{battle.id}}/">
 {% csrf_token %}
 	<input class="button" type="submit" value="Fight!"/> 

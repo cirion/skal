@@ -49,7 +49,7 @@ def valid_for_stat_pre_reqs(character, pre_reqs, enforceMax):
 					character_stat = CharacterStat.objects.get(character=character.pk, stat=pre_req.stat)
 					level = level_from_value(character_stat.value)
 					level += character.stat_bonus(character_stat.stat)
-					print "For stat " + character_stat.stat.name + " comparing " + str(level) + ":" + str(level_from_value(level)) + " to " + str(pre_req.minimum)
+					#print "For stat " + character_stat.stat.name + " comparing " + str(level) + ":" + str(level_from_value(level)) + " to " + str(pre_req.minimum)
 					if level < pre_req.minimum:
 						return False
 					elif enforceMax and level_from_value(character_stat.value) > pre_req.maximum:
@@ -496,6 +496,14 @@ class Party(models.Model):
 		return Character.objects.filter(party=self,pk=character.id).exists()
 	def members(self):
 		return Character.objects.filter(party=self)
+	def odds_against(self, battle):
+		odds_result = None
+		for member in self.members():
+			result = member.odds_against(battle)
+			if not odds_result or result['odds'] > odds_result['odds']:
+				result['character'] = member
+				odds_result = result
+		return odds_result
 	def size(self):
 		return self.members().count()
 	def max_size(self):
@@ -669,9 +677,9 @@ class Character(models.Model):
 		self.actions = self.actions - 1
 
 		if battle:
-			# Increment the appropriate weapon skills. Always get 2pts in current weapon if it's a challenge, 1pt if it's easy.
-			odds = self.odds_against(battle)
-			if odds['odds'] > .5:
+			# Increment the appropriate weapon skills. Always get 2pts in current weapon if it's a challenge, 1pt if it's easy (or someone else is fighting for us)
+			odds = self.party.odds_against(battle)
+			if odds['odds'] > .5 or odds['character'] != self:
 				amount = 1
 			else:
 				amount = 2
@@ -912,6 +920,7 @@ class Change(models.Model):
 	TYPE_ENEMY = 12
 	TYPE_LOCATION_LEARNED = 13
 	TYPE_LOCATION_CHANGED = 14
+	TYPE_ALLY = 15
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
@@ -927,6 +936,7 @@ class Change(models.Model):
 		(TYPE_ENEMY, "Enemy"),
 		(TYPE_LOCATION_LEARNED, "Learned Location"),
 		(TYPE_LOCATION_CHANGED, "Moved To Location"),
+		(TYPE_ALLY, "Ally"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()

@@ -310,9 +310,10 @@ def battle(request, battle_id):
 	current_character = Character.objects.get(player=request.user.id)
 	if current_character.actions < 1:
 		return render_to_response('lok/wait.html', {'time': (current_character.refill_time - datetime.utcnow().replace(tzinfo=utc)).seconds})
-	odds_result = current_character.odds_against(battle)
+	odds_result = current_character.party.odds_against(battle)
 	odds = odds_result['odds']
 	weapon = odds_result['weapon']
+	fighter = odds_result['character']
 	choice = Choice.objects.get(scenario=battle)
 	successes = Result.objects.filter(choice=choice.pk, type=Result.SUCCESS)
 	failures = Result.objects.filter(choice=choice.pk, type=Result.FAILURE)
@@ -332,6 +333,7 @@ def battle(request, battle_id):
 		outcome_change.name = "Victory!"
 	else:
 		outcome_change.name = "Defeat!"
+	changes.insert(0,Change(type=Change.TYPE_ALLY,name=fighter))
 	changes.insert(0,Change(type=Change.TYPE_WEAPON,name=weapon))
 	changes.insert(0,Change(type=Change.TYPE_ENEMY,name=battle.title))
 	changes.insert(0,outcome_change)
@@ -347,10 +349,11 @@ def scenario(request, scenario_id):
 		return HttpResponseRedirect('/lok/story/')
 	try:
 		battle = scenario.battle
-		result = current_character.odds_against(battle)
+		result = current_character.party.odds_against(battle)
 		odds = result['odds']
 		weapon = result['weapon']
-		return render_to_response('lok/battle.html', {'battle': battle, 'choice': Choice.objects.get(scenario=scenario_id), 'odds': int(odds * 100), 'weapon': weapon, 'character': current_character}, context_instance=RequestContext(request))
+		ally = result['character']
+		return render_to_response('lok/battle.html', {'battle': battle, 'choice': Choice.objects.get(scenario=scenario_id), 'odds': int(odds * 100), 'ally': ally, 'weapon': weapon, 'character': current_character}, context_instance=RequestContext(request))
 	except Exception:
 		choices = list(Choice.objects.filter(scenario=scenario_id))
 		final_choices = list()
@@ -385,7 +388,8 @@ def result(request, result_id):
 def battle_result(request, result_id):
 	result = Result.objects.get(pk=result_id)
 	changes = request.session.get('changes')
-	return render_to_response('lok/battle_result.html', {'result': result, 'changes': changes})
+	current_character = Character.objects.get(player=request.user.id)
+	return render_to_response('lok/battle_result.html', {'result': result, 'character': current_character, 'changes': changes})
 
 @login_required
 def buy(request, item_id, quantity):

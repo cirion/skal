@@ -59,11 +59,11 @@ def character(request):
 	plots = CharacterPlot.objects.filter(character = current_character, plot__visible = True, plot__achievement = False )
 	plot_descriptions = list()
 	for plot in plots:
-		print "Looking at " + plot.__unicode__() + "  " + str(plot.pk) + " value = " + str(plot.value)
-		for arg in PlotDescription.objects.filter(plot = plot.plot.pk):
-			print "Candidate " + " " + str(arg.pk) + ":" + arg.__unicode__() + ": " + str(arg.value)
+		#print "Looking at " + plot.__unicode__() + "  " + str(plot.pk) + " value = " + str(plot.value)
+		#for arg in PlotDescription.objects.filter(plot = plot.plot.pk):
+		#	print "Candidate " + " " + str(arg.pk) + ":" + arg.__unicode__() + ": " + str(arg.value)
 		if PlotDescription.objects.filter(plot = plot.plot.pk, value = plot.value):
-			print "Got a match."
+			#print "Got a match."
 			plot_descriptions.append(PlotDescription.objects.get(plot=plot.plot, value=plot.value))
 	achievements = list(CharacterPlot.objects.filter(character = current_character, plot__achievement = True))
 	achievements.reverse()
@@ -425,7 +425,7 @@ def sell(request, item_id, quantity):
 
 @login_required
 def title(request, title_id):
-	print "Using ID " + str(title_id)
+	#print "Using ID " + str(title_id)
 	current_character = Character.objects.get(player=request.user.id)
 	if not CharacterTitle.objects.filter(character=current_character,title__id=title_id):
 		current_character.active_title=None

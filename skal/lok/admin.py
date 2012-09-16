@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle, Party, PartyInvite 
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle, Party, PartyInvite, SocialMessage
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -248,6 +248,9 @@ class PartyAdmin(admin.ModelAdmin):
 class PartyInviteAdmin(admin.ModelAdmin):
 	model = PartyInvite
 
+class SocialMessageAdmin(admin.ModelAdmin):
+	model = SocialMessage
+
 admin.site.register(Scenario, ScenarioAdmin)
 admin.site.register(Choice, ChoiceAdmin)
 admin.site.register(Result, ResultAdmin)
@@ -268,3 +271,4 @@ admin.site.register(Image, ImageAdmin)
 admin.site.register(Title, TitleAdmin)
 admin.site.register(Party, PartyAdmin)
 admin.site.register(PartyInvite, PartyInviteAdmin)
+admin.site.register(SocialMessage, SocialMessageAdmin)

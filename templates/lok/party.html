@@ -9,6 +9,15 @@
 {% endblock %}
 
 {% block content %}
+{% if notifications %}
+<p>Something has happened!</p>
+<ul>
+{% for notification in notifications %}
+<li>{{notification.description}} <a href="/lok/dismiss_message/{{notification.id}}"><input type="submit" class="button" value="Acknowledged"/></a></li>
+{% endfor %}
+</ul>
+{% endif %}
+
 {% if character.party.members.count > 1 %}
 <p>You are traveling with the following people.</p>
 <ul>

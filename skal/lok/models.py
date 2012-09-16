@@ -967,4 +967,4 @@ class SocialMessage(models.Model):
 	created = models.DateTimeField(auto_now_add=True)
 	description = models.CharField(max_length=1000)
 	def __unicode__(self):
-		return "To " + to_character.name + ": " + description
+		return "To " + self.to_character.name + ": " + self.description

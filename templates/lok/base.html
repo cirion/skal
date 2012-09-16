@@ -28,10 +28,6 @@ body{behavior:url(csshover.htc); font-size:75%;}
 <div id="container">
 
 <div id="top">
-<!--
-<p><a href="#">Homepage</a> | 
-<a href="mailto:denise@mitchinson.net"> Contact </a></p>
--->
 <p/><p/>
 <h1>{% block title2 %}Skal{% endblock %}</h1>
 
@@ -45,11 +41,6 @@ body{behavior:url(csshover.htc); font-size:75%;}
 <ul>
 <li><a href="/" class="top_parent" style="background-color:{%block menu_story%}{%endblock%}">&nbsp; Story</a>
 
-<!--
-<ul>
-<li><a href="#">&bull; About</a></li>
-</ul>
--->
 </li>
 </ul>
 	
@@ -71,14 +62,6 @@ body{behavior:url(csshover.htc); font-size:75%;}
 <ul>
 <li><a href="/lok/market/" class="top_parent" style="background-color:{%block menu_market%}{%endblock%}">&nbsp;  Market</a>
 
-<!--
-<ul>
-<li><a href="#">&bull; Link 1</a></li>
-<li><a href="#">&bull; Link 2</a></li>
-<li><a href="#">&bull; Link 3</a></li>
-
-</ul>
--->
 
 </li>
 </ul>
@@ -89,7 +72,7 @@ body{behavior:url(csshover.htc); font-size:75%;}
 </ul>
 
 <ul>
-<li><a href="/lok/party/" class="top_parent" style="background-color:{%block menu_party%}{%endblock%}">&nbsp; Party</a>
+<li><a href="/lok/party/" class="top_parent" style="background-color:{%block menu_party%}{%endblock%}">&nbsp; Party{%block party_notification%}{%endblock%}</a>
 </li>
 </ul>
 

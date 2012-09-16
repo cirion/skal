@@ -12,7 +12,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.template import Context, loader
 from django.core.mail import send_mail, EmailMessage
-from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription, Title, CharacterTitle, Party, PartyInvite
+from lok.models import Scenario, Choice, Character, MoneyOutcome, StatOutcome, ScenarioStatPreReq, ChoiceStatPreReq, Result, CharacterStat, CharacterItem, Stat, ChoiceItemPreReq, ChoiceMoneyPreReq, ChoicePlotPreReq, CharacterPlot, Plot, Equipment, EquipmentStat, Battle, Change, RouteFree, RouteToll, RouteItemCost, RouteItemFree, LocationRoute, CharacterLocationAvailable, RouteOption, ItemLocation, Item, Location, PlotDescription, Title, CharacterTitle, Party, PartyInvite, SocialMessage
 import random
 from random import Random
 from lok.utils import level_from_value as level_from_value
@@ -125,7 +125,9 @@ def story(request):
 			next_page_time_string = next_page_time_string +  "1 second"
 		elif seconds > 1:
 			next_page_time_string = next_page_time_string +  "%s seconds" % (seconds)
-	return render_to_response('lok/story.html', {'routes': routes, 'next_page_time': next_page_time_string, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character})
+	party_notifications = SocialMessage.objects.filter(to_character=current_character).exists()
+	print "Party notifications: " + str(party_notifications)
+	return render_to_response('lok/story.html', {'routes': routes, 'next_page_time': next_page_time_string, 'scenarios': out_scenarios, 'actions': current_character.actions, 'character': current_character, "party_notification": party_notifications})
 
 @login_required
 def party(request):
@@ -163,7 +165,14 @@ def party(request):
 	party_room -= party_invites_sent.count()
 	if party_room < 0:
 		party_room = 0
-	return render_to_response('lok/party.html', {'party_room': party_room, 'message': message, 'character': current_character, 'party_invites': party_invites, 'party_invites_sent': party_invites_sent, 'friends': friends, 'sent_invites': sent_invites, 'received_invites': received_invites}, context_instance=RequestContext(request))
+	notifications = SocialMessage.objects.filter(to_character=current_character)
+	return render_to_response('lok/party.html', {'party_room': party_room, 'message': message, 'character': current_character, 'party_invites': party_invites, 'party_invites_sent': party_invites_sent, 'friends': friends, 'sent_invites': sent_invites, 'received_invites': received_invites, 'notifications': notifications}, context_instance=RequestContext(request))
+
+@login_required
+def dismiss_message(request, message_id):
+	message = SocialMessage.objects.get(pk=message_id)
+	message.delete()
+	return HttpResponseRedirect('/lok/party/')
 
 @login_required
 def invite_party(request, character_id):

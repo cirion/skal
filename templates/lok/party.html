@@ -18,7 +18,7 @@
 {% endif %}
 {% endfor %}
 </ul>
-<p><a href="/lok/leave_party/">Leave party</a></p>
+<p><a href="/lok/leave_party/"><input type="submit" class="button" value="Leave party"/></a></p>
 {% else %}
 <p>You are currently traveling alone.</p>
 {% endif %}
@@ -28,8 +28,7 @@
 <p>You have received an invitation to join a party:</p>
 <ul>
 {% for party_invite in party_invites %}
-<li>{{party_invite.party}} <a href="/lok/accept_party/{{party_invite.id}}?accept=true">Accept</a> <a href="/lok/accept_party/{{party_invite.id}}?a
-ccept=false">Decline</a></li>
+<li>{{party_invite.party}} <a href="/lok/accept_party/{{party_invite.id}}?accept=true"><input type="submit" class="button" value="Accept"/></a> <a href="/lok/accept_party/{{party_invite.id}}?accept=false"><input type="submit" class="button" value="Decline"/></a></li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -38,7 +37,7 @@ ccept=false">Decline</a></li>
 <p>You have sent invitations to join your party:</p>
 <ul>
 {% for invite in party_invites_sent %}
-<li>{{invite.to_character}} <a href="/lok/cancel_invite_party/{{invite.id}}/">Rescind</a></li>
+<li>{{invite.to_character}} <a href="/lok/cancel_invite_party/{{invite.id}}/"><input type="submit" class="button" value="Rescind"/></a></li>
 {% endfor %}
 </ul>
 {% endif %}
@@ -47,7 +46,7 @@ ccept=false">Decline</a></li>
 <p>You have met the following adventurers.</p>
 <ul>
 {% for friend in friends %}
-<li>{{friend.title_name}} {% if party_room %} <a href="/lok/invite_party/{{friend.id}}/">Invite to join party</a>{% endif %}</li>
+<li>{{friend.title_name}} {% if party_room %} <a href="/lok/invite_party/{{friend.id}}/"><input type="submit" class="button" value="Invite to join party"/></a>{% endif %}</li>
 {% endfor %}
 </ul>
 {% else %}
@@ -75,7 +74,7 @@ ccept=false">Decline</a></li>
 <p>You have received invitations from the following people.</p>
 <ul>
 {% for received_invite in received_invites %}
-<li>{{received_invite.title_name}} <a href="/lok/accept_friend/{{received_invite.player.id}}?accept=true">Accept</a> <a href="/lok/accept_friend/{{received_invite.player.id}}?accept=false">Decline</a></li>
+<li>{{received_invite.title_name}} <a href="/lok/accept_friend/{{received_invite.player.id}}?accept=true"><input type="submit" class="button" value="Accept"/></a> <a href="/lok/accept_friend/{{received_invite.player.id}}?accept=false"><input type="submit" class="button" value="Decline"/></a></li>
 {% endfor %}
 </ul>
 {% endif %}

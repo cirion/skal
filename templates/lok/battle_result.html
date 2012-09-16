@@ -7,7 +7,7 @@
 {% block intro %}
 {% if changes %}
 {# I would love to replace this with more flavorful text. Maybe semi-randomize it. A few sentences of prose describing HOW you won. #}
-<p>{%if changes.3 == character %}You{%else%}{{changes.3.name.title_name}}{%endif%} {% if changes.0.name == "Victory!" %}defeated{%else%}lost to{%endif%} {{ changes.1.name }} using {% if changes.3 == character%}your{%else%}{{"#HIS_HER#"|macro:changes.3.name}}{%endif%} {% if changes.2.name%}{{ changes.2.name }}{% else %}bare hands{% endif %}.</p>
+<p>{%if changes.3.name == character %}You{%else%}{{changes.3.name.title_name}}{%endif%} {% if changes.0.name == "Victory!" %}defeated{%else%}lost to{%endif%} {{ changes.1.name }} using {% if changes.3.name == character%}your{%else%}{{"#HIS_HER#"|macro:changes.3.name}}{%endif%} {% if changes.2.name%}{{ changes.2.name }}{% else %}bare hands{% endif %}.</p>
 {% endif %}
 {% endblock %}
 
@@ -26,7 +26,7 @@
 			{% elif change.type == 3 and change.amount < 0 %}
 	<li>You lost {% widthratio -1 1 change.amount%} {{change.name}}, for a new total of {{change.new}}.</li>
 			{% elif change.type == 3 %}
-	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}.</li>
+	<li>You gained {{change.amount}} {{change.name}}, for a new total of {{change.new}}. {% if character.party.size > 1 %}You share the rest of the spoils with your other party members.{% endif %}</li>
 			{% elif change.type == 5 and change.old == 0 %}
 	<li>You now have {{change.new}} {{change.name}}.</li>
 			{% elif change.type == 5 %}

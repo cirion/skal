@@ -679,7 +679,7 @@ class Character(models.Model):
 		if battle:
 			# Increment the appropriate weapon skills. Always get 2pts in current weapon if it's a challenge, 1pt if it's easy (or someone else is fighting for us)
 			odds = self.party.odds_against(battle)
-			if odds['odds'] > .5 or odds['character'] != self:
+			if odds['odds'] > 1 or odds['character'] != self:
 				amount = 1
 			else:
 				amount = 2
@@ -737,9 +737,19 @@ class Character(models.Model):
 
 		money_outcomes = MoneyOutcome.objects.filter(choice = result.pk)
 		for outcome in money_outcomes:
+			share = outcome.amount
+			if battle and self.party.size() > 1:
+				# Divide money among the team.
+				share = (int)((outcome.amount * 1.25) / self.party.size())
+				for player in self.party.members():
+					if player != self:
+						player.money += share
+						player.save()
+						notice = SocialMessage(to_character=player, description = "You received " + str(share) + " royals from " + self.title_name() + "'s battle with " + battle.title + ".")
+						notice.save()
 			change = Change(type = Change.TYPE_MONEY)
 			change.old = self.money
-			self.money += outcome.amount
+			self.money += share
 			if outcome.amount == 1:
 				change.name = "royal"
 			else:
@@ -951,3 +961,10 @@ class ItemLocation(models.Model):
 	location = models.ForeignKey(Location)
 	def __unicode__(self):
 		return self.item.name + " in " + self.location.name
+
+class SocialMessage(models.Model):
+	to_character = models.ForeignKey(Character)
+	created = models.DateTimeField(auto_now_add=True)
+	description = models.CharField(max_length=1000)
+	def __unicode__(self):
+		return "To " + to_character.name + ": " + description

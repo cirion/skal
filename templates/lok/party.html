@@ -13,9 +13,10 @@
 <p>Something has happened!</p>
 <ul>
 {% for notification in notifications %}
-<li>{{notification.description}} <a href="/lok/dismiss_message/{{notification.id}}"><input type="submit" class="button" value="Acknowledged"/></a></li>
+<li>{{notification.description}} <a href="/lok/dismiss_message/{{notification.id}}"><input type="submit" class="button" value="Dismiss"/></a></li>
 {% endfor %}
 </ul>
+<a href="/lok/dismiss_all_messages"><input type="submit" class="button" value="Dismiss All"/></a>
 {% endif %}
 
 {% if character.party.members.count > 1 %}

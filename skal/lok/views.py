@@ -175,6 +175,12 @@ def dismiss_message(request, message_id):
 	return HttpResponseRedirect('/lok/party/')
 
 @login_required
+def dismiss_all_messages(request):
+	current_character = Character.objects.get(player=request.user.id)
+	SocialMessage.objects.filter(to_character=current_character).delete()
+	return HttpResponseRedirect('/lok/party/')
+
+@login_required
 def invite_party(request, character_id):
 	current_character = Character.objects.get(player=request.user.id)
 	invited = Character.objects.get(pk=character_id)

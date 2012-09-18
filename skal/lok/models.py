@@ -1,4 +1,5 @@
 from django.db import models
+from string import capwords
 from datetime import datetime, timedelta
 from django.utils.timezone import utc
 from django.contrib.auth.models import User
@@ -143,7 +144,10 @@ class Battle(Scenario):
 		(ENEMY_RANGED, "Ranged"),
 	)
 	enemy = models.IntegerField(choices=TYPE_ENEMY)
+	name = models.CharField(max_length=100)
 	strength = models.IntegerField()
+	def __unicode__(self):
+		return capwords(self.title)
 
 class Choice(models.Model):
 	scenario = models.ForeignKey(Scenario)

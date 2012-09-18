@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from string import capwords
 import friends
 from friends.models import FriendshipRequest, Friendship
 import re
@@ -350,7 +351,7 @@ def battle(request, battle_id):
 		outcome_change.name = "Defeat!"
 	changes.insert(0,Change(type=Change.TYPE_ALLY,name=fighter))
 	changes.insert(0,Change(type=Change.TYPE_WEAPON,name=weapon))
-	changes.insert(0,Change(type=Change.TYPE_ENEMY,name=battle.title))
+	changes.insert(0,Change(type=Change.TYPE_ENEMY,name=battle.name))
 	changes.insert(0,outcome_change)
 	response = HttpResponseRedirect(reverse('lok.views.battle_result', args=(result.id,)))
 	request.session['changes'] = changes

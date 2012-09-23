@@ -56,6 +56,8 @@
 			{% endif %}
 			{% if change.type == 14 %}
 	<li>You are now in {{change.name}}.</li>
+			{% elif change.type == 16 %}
+	<li>You have earned a new title, and may now be known as {{change.name}}!</li>
 			{% endif %}
 		{% endfor %}
 </ul>

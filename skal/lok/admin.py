@@ -1,4 +1,4 @@
-from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle, Party, PartyInvite, SocialMessage
+from lok.models import Scenario, Choice, MoneyOutcome, StatOutcome, Result, ChoiceStatPreReq, ScenarioStatPreReq, Character, CharacterStat, Stat, CharacterPlot, Plot, Item, CharacterItem, PlotOutcome, ItemOutcome, ScenarioItemPreReq, ChoiceItemPreReq, ScenarioPlotPreReq, ChoiceMoneyPreReq, HealthOutcome, ChoicePlotPreReq, ScenarioLevelPreReq, Equipment, EquipmentStat, Battle, Location, ScenarioLocationPreReq, ScenarioLocationTypePreReq, CharacterLocationAvailable, LocationRoute, RouteToll, RouteFree, RouteItemFree, RouteItemCost, RouteOption, ScenarioLocationKnownPreReq, SetLocationOutcome, LearnLocationOutcome, ItemLocation, ScenarioHealthPreReq, PlotDescription, Image, Title, CharacterTitle, Party, PartyInvite, SocialMessage, TitleOutcome
 from functools import partial
 from django.forms import MediaDefiningClass
 
@@ -81,6 +81,10 @@ class LearnLocationOutcomeInline(admin.TabularInline):
 	model = LearnLocationOutcome
 	extra = 1
 
+class TitleOutcomeInline(admin.TabularInline):
+	model = TitleOutcome
+	extra = 1
+
 class ResultInline(LinkedInline):
 	model = Result
 
@@ -154,7 +158,7 @@ class ChoiceAdmin(admin.ModelAdmin):
 
 class ResultAdmin(admin.ModelAdmin):
 	model = Result
-	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline, HealthOutcomeInline, SetLocationOutcomeInline, LearnLocationOutcomeInline]
+	inlines = [MoneyOutcomeInline, StatOutcomeInline,PlotOutcomeInline,ItemOutcomeInline, HealthOutcomeInline, SetLocationOutcomeInline, LearnLocationOutcomeInline, TitleOutcomeInline]
 	search_fields = ['title', 'description']
 
 class CharacterLocationAvailableInline(admin.TabularInline):

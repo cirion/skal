@@ -10,6 +10,7 @@ from random import Random
 import logging
 from imagekit.models import ImageSpecField 
 from imagekit.processors import ResizeToFill, Adjust, ResizeToFit, AddBorder
+from lok.templatetags.lok_extras import macro
 
 logger = logging.getLogger(__name__)
 
@@ -490,6 +491,12 @@ class Title(models.Model):
 		else:
 			return self.raw_title_male.replace("#NAME#", character.name)
 
+class TitleOutcome(models.Model):
+	result = models.ForeignKey(Result)
+	title = models.ForeignKey(Title)
+	def __unicode__(self):
+		return self.title.__unicode__()
+
 class Party(models.Model):
 	def leader(self):
 		members = sorted(Character.objects.filter(party=self), key=lambda a: a.max_party_size)
@@ -866,6 +873,14 @@ class Character(models.Model):
 			location.save()
 			changes.append(change)
 
+		title_outcomes = TitleOutcome.objects.filter(result = result.pk)
+		for title_outcome in title_outcomes:
+			change = Change(type = Change.TYPE_TITLE)
+			change.name = macro(title_outcome.title.title(self), self)
+			title, created = CharacterTitle.objects.get_or_create(character = self, title = title_outcome.title)
+			title.save()
+			changes.append(change)
+
 		if SetLocationOutcome.objects.filter(choice=result.pk):
 			outcome = SetLocationOutcome.objects.get(choice=result.pk)
 			change = Change(type = Change.TYPE_LOCATION_CHANGED)
@@ -935,6 +950,7 @@ class Change(models.Model):
 	TYPE_LOCATION_LEARNED = 13
 	TYPE_LOCATION_CHANGED = 14
 	TYPE_ALLY = 15
+	TYPE_TITLE = 16
 	TYPE_CHOICES = (
 		(TYPE_INCREMENT, "Increment"),
 		(TYPE_LEVEL, "Level"),
@@ -951,6 +967,7 @@ class Change(models.Model):
 		(TYPE_LOCATION_LEARNED, "Learned Location"),
 		(TYPE_LOCATION_CHANGED, "Moved To Location"),
 		(TYPE_ALLY, "Ally"),
+		(TYPE_TITLE, "Title"),
 	)
 	type = models.IntegerField(choices=TYPE_CHOICES, default=TYPE_INCREMENT)
 	old = models.IntegerField()
@@ -972,3 +989,4 @@ class SocialMessage(models.Model):
 	description = models.CharField(max_length=1000)
 	def __unicode__(self):
 		return "To " + self.to_character.name + ": " + self.description
+
